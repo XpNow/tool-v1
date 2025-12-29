@@ -1,0 +1,14 @@
+PHOENIX LOGS
+— 20.12.2025 18:32
+Jucatorul Ion[101] a pus in Locker A item-ul Pistol(x1).
+Jucatorul Ion[101] a scos din Locker A item-ul Pistol(x1).
+Jucatorul Ion[101] i-a oferit lui Maria[202] - Medicine(x2).
+Jucatorul Ion[101] i-a oferit lui Maria[202] suma de 13.000.000$.
+Jucatorul Ion[101] a transferat 1.900.000$ lui Maria[202].
+[TRANSFER] Jucatorul Ion[101] a pus in Locker A item-ul Bandage(x482.708).
+[REMOVE] Jucatorul Ion[101] a scos din Locker A item-ul Bandage(x1).
+[PERCHEZITIE] Jucatorul Ion[101] a scos din 787 item-ul Gadget Pistol(x1).
+— Today at 10:07 PM
+Jucatorul Ion[101] a pus in Locker A item-ul USB Drive(x5).
+— Yesterday at 09:30
+Jucatorul Ion[101] a scos din Locker A item-ul USB Drive(x2).

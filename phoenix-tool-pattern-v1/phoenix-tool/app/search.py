@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from .db import get_db
-from .util import format_ts_display, format_money_ro, actor_label
+from .util import format_ts_display, format_money_ro, actor_label, build_warning_lines, parse_iso_maybe
 
 console = Console(force_terminal=True)
 
@@ -27,7 +27,7 @@ def has_key(r, k):
         except Exception:
             return False
 
-def search_events(
+def _build_search_query(
     ids=None,
     between_ids=None,
     name=None,
@@ -37,11 +37,7 @@ def search_events(
     max_money=None,
     ts_from: str | None = None,
     ts_to: str | None = None,
-    limit=500,
 ):
-    conn = get_db()
-    cur = conn.cursor()
-
     where = []
     params = []
 
@@ -84,11 +80,40 @@ def search_events(
         params.append(ts_to)
 
     sql = """
-        SELECT ts, ts_raw, event_type, src_id, src_name, dst_id, dst_name, item, qty, money, container
+        SELECT ts, ts_raw, timestamp_quality, event_type, src_id, src_name, dst_id, dst_name, item, qty, money, container
         FROM events
     """
     if where:
         sql += " WHERE " + " AND ".join(where)
+
+    return sql, params
+
+
+def search_events(
+    ids=None,
+    between_ids=None,
+    name=None,
+    item=None,
+    event_type=None,
+    min_money=None,
+    max_money=None,
+    ts_from: str | None = None,
+    ts_to: str | None = None,
+    limit=500,
+):
+    conn = get_db()
+    cur = conn.cursor()
+    sql, params = _build_search_query(
+        ids=ids,
+        between_ids=between_ids,
+        name=name,
+        item=item,
+        event_type=event_type,
+        min_money=min_money,
+        max_money=max_money,
+        ts_from=ts_from,
+        ts_to=ts_to,
+    )
 
     sql += " ORDER BY (ts IS NULL) ASC, ts ASC, id ASC LIMIT ?"
     params.append(int(limit))
@@ -98,7 +123,37 @@ def search_events(
     return rows
 
 
-def _count_warnings(rows):
+def count_search_events(
+    ids=None,
+    between_ids=None,
+    name=None,
+    item=None,
+    event_type=None,
+    min_money=None,
+    max_money=None,
+    ts_from: str | None = None,
+    ts_to: str | None = None,
+):
+    conn = get_db()
+    cur = conn.cursor()
+    sql, params = _build_search_query(
+        ids=ids,
+        between_ids=between_ids,
+        name=name,
+        item=item,
+        event_type=event_type,
+        min_money=min_money,
+        max_money=max_money,
+        ts_from=ts_from,
+        ts_to=ts_to,
+    )
+    sql = "SELECT COUNT(*) c FROM (" + sql + ")"
+    count = cur.execute(sql, params).fetchone()["c"]
+    conn.close()
+    return int(count)
+
+
+def _count_warnings(rows, negative_storage_count: int = 0):
     rel = 0
     unk_qty = 0
     unk_container = 0
@@ -106,8 +161,11 @@ def _count_warnings(rows):
     rel_re = re.compile(r"\b(today|yesterday)\b", re.I)
 
     for r in rows:
+        ts_quality = (rv(r, "timestamp_quality") or "").upper()
         ts_raw = (rv(r, "ts_raw") or "")
-        if isinstance(ts_raw, str) and rel_re.search(ts_raw):
+        if ts_quality == "RELATIVE":
+            rel += 1
+        elif isinstance(ts_raw, str) and rel_re.search(ts_raw):
             rel += 1
 
         it = (rv(r, "item") or "")
@@ -120,14 +178,53 @@ def _count_warnings(rows):
         if et in ("container_put", "container_remove") and not container:
             unk_container += 1
 
-    out = []
-    if rel:
-        out.append(f"{rel} RELATIVE timestamps")
-    if unk_qty:
-        out.append(f"{unk_qty} UNKNOWN qty")
-    if unk_container:
-        out.append(f"{unk_container} UNKNOWN container")
-    return out
+    return build_warning_lines(
+        relative_count=rel,
+        unknown_qty_count=unk_qty,
+        unknown_container_count=unk_container,
+        negative_storage_count=negative_storage_count,
+    )
+
+
+def _minute_key(ts: str | None, ts_raw: str | None) -> str | None:
+    dt = parse_iso_maybe(ts or "")
+    if dt is not None:
+        return dt.replace(second=0, microsecond=0).isoformat()
+    return None if not ts_raw else ts_raw.strip()
+
+
+def _collapse_rows(rows, collapse: str | None):
+    if collapse is None or str(collapse).lower() in ("smart", "1", "true", "yes"):
+        collapse = "smart"
+    if str(collapse) in ("0", "false", "no"):
+        return [dict(r) | {"_count": 1} for r in rows]
+
+    from collections import OrderedDict
+
+    grouped = OrderedDict()
+    for r in rows:
+        ts = rv(r, "ts")
+        ts_raw = rv(r, "ts_raw")
+        key = (
+            _minute_key(ts, ts_raw),
+            rv(r, "event_type"),
+            rv(r, "src_id"),
+            rv(r, "dst_id"),
+            rv(r, "item"),
+            rv(r, "qty"),
+            rv(r, "money"),
+            rv(r, "container"),
+        )
+        if key not in grouped:
+            grouped[key] = {"row": dict(r), "count": 0}
+        grouped[key]["count"] += 1
+
+    collapsed = []
+    for item in grouped.values():
+        row = item["row"]
+        row["_count"] = item["count"]
+        collapsed.append(row)
+    return collapsed
 
 
 def _top_counts(rows, key, limit=5):
@@ -222,6 +319,7 @@ def render_search(rows, meta: dict | None = None):
     title = meta.get("title") or "SEARCH — pattern view"
     shown = len(rows)
     matched = meta.get("matched") or shown
+    collapse = meta.get("collapse") or "smart"
 
     warnings = _count_warnings(rows)
 
@@ -230,6 +328,7 @@ def render_search(rows, meta: dict | None = None):
         f"Query: {query}" if query else "Query: (none)",
         f"Window: {window}",
         f"Matched: {matched} events | Showing: {shown}" + (f" (limit={limit})" if limit is not None else ""),
+        f"Collapse: {collapse}",
     ]
     if warnings:
         hdr_lines.append("Warnings: " + " | ".join(warnings))
@@ -277,9 +376,27 @@ def render_search(rows, meta: dict | None = None):
     if pat:
         console.print(Panel("\n".join(pat), title="PATTERN", expand=False))
 
+    grouped = []
+    top_types_full = _top_counts(rows, "event_type", limit=10)
+    if top_types_full:
+        grouped.append("• Types: " + ", ".join([f"{k} ({v})" for k, v in top_types_full]))
+
+    top_items_full = _top_items(rows, limit=10)
+    if top_items_full:
+        grouped.append("• Items: " + ", ".join([f"{it} ({cnt})" for it, cnt in top_items_full]))
+
+    if focus_id:
+        partners_full = _partner_counts_for_focus(rows, focus_id, limit=10)
+        if partners_full:
+            grouped.append("• Partners: " + ", ".join([f"{pid} ({cnt})" for pid, cnt in partners_full]))
+
+    if grouped:
+        console.print(Panel("\n".join(grouped), title="GROUPED SUMMARY", expand=False))
+
     t = Table(title="EVIDENCE", show_lines=True)
     t.add_column("Time")
     t.add_column("Type")
+    t.add_column("Count", justify="right")
     t.add_column("From")
     t.add_column("To")
     t.add_column("Container")
@@ -287,7 +404,9 @@ def render_search(rows, meta: dict | None = None):
     t.add_column("Qty", justify="right")
     t.add_column("Money", justify="right")
 
-    for r in rows:
+    collapsed = _collapse_rows(rows, collapse)
+
+    for r in collapsed:
         src_id = rv(r, "src_id")
         src_name = rv(r, "src_name")
         dst_id = rv(r, "dst_id")
@@ -307,9 +426,18 @@ def render_search(rows, meta: dict | None = None):
 
         money = rv(r, "money")
 
+        count_cell = ""
+        try:
+            count = int(rv(r, "_count") or 1)
+        except Exception:
+            count = 1
+        if count > 1:
+            count_cell = f"x{count}"
+
         t.add_row(
             format_ts_display(ts, ts_raw),
             str(rv(r, "event_type") or ""),
+            count_cell,
             src,
             dst,
             container,
@@ -321,6 +449,6 @@ def render_search(rows, meta: dict | None = None):
     console.print(t)
 
     footer = [
-        "Next: refine with item=..., type=..., from=..., to=..., limit=..., view=full (planned), export=1 (planned)"
+        "Next: refine with item=..., type=..., from=..., to=..., limit=..., collapse=0"
     ]
     console.print(Panel("\n".join(footer), expand=False))
