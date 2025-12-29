@@ -54,24 +54,36 @@ def sha1_text(s: str) -> str:
 # Normalizers (parsing)
 # -------------------------
 
+def parse_int_ro(value_str: str | None) -> int | None:
+    """
+    Parse a Romanian-formatted integer string.
+
+    Handles:
+      - dots/commas/space separators: 13.000.000 / 13,000,000 / 13 000 000
+      - prefixes/suffixes like x482.708, (x7.825)
+      - unicode spaces
+    Returns None if no digits are present.
+    """
+    if value_str is None:
+        return None
+    s = str(value_str).strip()
+    if not s:
+        return None
+    s = s.replace("$", "")
+    digits = re.sub(r"[^\d]", "", s)
+    return int(digits) if digits else None
+
+
 def normalize_money(s: str) -> int:
-    s = (s or "").replace("$", "").replace(" ", "")
-    s = s.replace(".", "").replace(",", "").strip()
-    return int(s) if s.isdigit() else 0
+    value = parse_int_ro(s)
+    return int(value or 0)
 
 
 def normalize_qty(s: str):
     """
     Normalize quantity strings into an integer (or None if unknown).
-
-    Accepts formats like:
-      - "10.000.000", "10,000,000", "10 000 000"
-      - "x10.000.000", "(x10.000.000)", "10.000.000x"
-    Returns None if no digits are present.
     """
-    s = (s or "")
-    digits = re.sub(r"\D+", "", s)
-    return int(digits) if digits else None
+    return parse_int_ro(s)
 
 # -------------------------
 # Display formatting (output only)
@@ -94,23 +106,29 @@ def actor_label(name: str | None, pid: str | None) -> str:
     return ""
 
 
-def render_event_line(ev: dict) -> str:
+def _read_event_value(ev, key, default=None):
+    if isinstance(ev, dict):
+        return ev.get(key, default)
+    return getattr(ev, key, default)
+
+
+def render_event_line(ev) -> str:
     """
     Produce the locked narrative line format:
     DD.MM.YYYY HH:MM - Name[ID] <verb> ... (mixed EN/RO allowed)
     """
-    t = format_ts_display(ev.get("ts"), ev.get("ts_raw")).strip()
+    t = format_ts_display(_read_event_value(ev, "ts"), _read_event_value(ev, "ts_raw")).strip()
     if not t:
-        t = format_ts_display(None, ev.get("ts_raw")).strip()
+        t = format_ts_display(None, _read_event_value(ev, "ts_raw")).strip()
 
-    et = ev.get("event_type") or ""
-    src = actor_label(ev.get("src_name"), ev.get("src_id"))
-    dst = actor_label(ev.get("dst_name"), ev.get("dst_id"))
-    item = ev.get("item") or ""
-    qty_val = ev.get("qty")
+    et = _read_event_value(ev, "event_type") or ""
+    src = actor_label(_read_event_value(ev, "src_name"), _read_event_value(ev, "src_id"))
+    dst = actor_label(_read_event_value(ev, "dst_name"), _read_event_value(ev, "dst_id"))
+    item = _read_event_value(ev, "item") or ""
+    qty_val = _read_event_value(ev, "qty")
     qty = int(qty_val) if qty_val is not None else None
-    money = int(ev.get("money") or 0)
-    container = ev.get("container") or "UNKNOWN"
+    money = int(_read_event_value(ev, "money") or 0)
+    container = _read_event_value(ev, "container") or "UNKNOWN"
 
     prefix = f"{t} - " if t else ""
 
@@ -137,7 +155,7 @@ def render_event_line(ev: dict) -> str:
     if et == "perchezitie_remove":
         # victim id is stored in dst_id
         q = f"{qty}x" if (qty is not None and qty != 0) else "?x"
-        victim = ev.get("dst_id") or "UNKNOWN"
+        victim = _read_event_value(ev, "dst_id") or "UNKNOWN"
         return f"{prefix}{src} took {q} {item} from ID {victim} (PERCHEZITIE)".strip()
 
     if et == "drop_item":
@@ -187,19 +205,33 @@ def render_event_line(ev: dict) -> str:
     return f"{prefix}{et}".strip()
 
 
-def last_known_location_from_chain(chain: list[dict], direction: str) -> str:
+def build_warning_lines(
+    relative_count: int = 0,
+    unknown_qty_count: int = 0,
+    unknown_container_count: int = 0,
+    negative_storage_count: int = 0,
+) -> list[str]:
+    return [
+        f"RELATIVE timestamps: {relative_count}",
+        f"UNKNOWN qty: {unknown_qty_count}",
+        f"UNKNOWN container: {unknown_container_count}",
+        f"negative storage likely missing history: {negative_storage_count}",
+    ]
+
+
+def last_known_location_from_chain(chain: list, direction: str) -> str:
     """Return last proven holder/container for a flow chain (per locked rule)."""
     if not chain:
         return "UNKNOWN"
     last = chain[-1]
-    et = last.get("event_type")
+    et = _read_event_value(last, "event_type")
 
     if et in ("container_put", "container_remove"):
-        return last.get("container") or "UNKNOWN"
+        return _read_event_value(last, "container") or "UNKNOWN"
 
     if et == "perchezitie_remove":
         # victim id is stored in dst_id; location = robbed from victim
-        victim = last.get("dst_id") or "UNKNOWN"
+        victim = _read_event_value(last, "dst_id") or "UNKNOWN"
         return f"PERCHEZITIE_FROM_{victim}"
 
     if et == "drop_item":
@@ -209,7 +241,7 @@ def last_known_location_from_chain(chain: list[dict], direction: str) -> str:
         return "VEHICLE_ENDPOINT"
 
     # otherwise last proven holder is the counterparty at the end of the chain
-    holder = last.get("dst_id") if direction.lower() == "out" else last.get("src_id")
+    holder = _read_event_value(last, "dst_id") if direction.lower() == "out" else _read_event_value(last, "src_id")
     if holder:
         return f"with ID {holder}"
     return "UNKNOWN"
