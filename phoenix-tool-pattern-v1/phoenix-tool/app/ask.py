@@ -5,12 +5,13 @@ from datetime import datetime, timezone
 from rich.console import Console
 from rich.panel import Panel
 
-from .db import get_db
-from .search import search_events, render_search
+from .repository import search_events
 from .report import build_case_file
-from .flow import build_flow, render_flow
-from .trace import trace, render_trace_story
+from .flow import build_flow
+from .trace import trace
 from .summary import summary_for_id
+from .repository import fetch_directional_events
+from .render import render_search, render_flow, render_trace, render_summary, render_report
 from .util import format_ts_display, render_event_line, format_money_ro
 
 
@@ -158,36 +159,14 @@ def _classify_intent(q: str) -> AskIntent:
 
 
 def _query_directional(pid: str, direction: str, types: list[str], ts_from: str | None, ts_to: str | None, limit: int = 300):
-    conn = get_db()
-    cur = conn.cursor()
-    where = ["event_type IN (%s)" % ",".join(["?"] * len(types))]
-    params: list = list(types)
-
-    if direction == "out":
-        where.append("src_id = ?")
-        params.append(pid)
-    else:
-        where.append("dst_id = ?")
-        params.append(pid)
-
-    if ts_from:
-        where.append("ts >= ?")
-        params.append(ts_from)
-    if ts_to:
-        where.append("ts <= ?")
-        params.append(ts_to)
-
-    sql = f"""
-        SELECT ts, ts_raw, event_type, src_id, src_name, dst_id, dst_name, item, qty, money
-        FROM events
-        WHERE {' AND '.join(where)}
-        ORDER BY (ts IS NULL) ASC, ts ASC, id ASC
-        LIMIT ?
-    """
-    params.append(int(limit))
-    rows = cur.execute(sql, params).fetchall()
-    conn.close()
-    return rows
+    return fetch_directional_events(
+        pid=pid,
+        direction=direction,
+        types=types,
+        ts_from=ts_from,
+        ts_to=ts_to,
+        limit=limit,
+    )
 
 
 def _render_exchange_candidates(pid: str, ts_from: str | None, ts_to: str | None):
@@ -224,22 +203,22 @@ def _render_exchange_candidates(pid: str, ts_from: str | None, ts_to: str | None
         return b
 
     for r in out_rows:
-        partner_id = str(r["dst_id"] or "")
+        partner_id = str(r.dst_id or "")
         if not partner_id:
             continue
-        b = _bp(partner_id, r["dst_name"])
-        b["out"].append(dict(r))
-        if r["money"]:
-            b["out_money"] += int(r["money"])
+        b = _bp(partner_id, r.dst_name)
+        b["out"].append(r)
+        if r.money:
+            b["out_money"] += int(r.money)
 
     for r in in_rows:
-        partner_id = str(r["src_id"] or "")
+        partner_id = str(r.src_id or "")
         if not partner_id:
             continue
-        b = _bp(partner_id, r["src_name"])
-        b["in"].append(dict(r))
-        if r["money"]:
-            b["in_money"] += int(r["money"])
+        b = _bp(partner_id, r.src_name)
+        b["in"].append(r)
+        if r.money:
+            b["in_money"] += int(r.money)
 
     # keep only candidates where both directions exist
     candidates = []
@@ -294,7 +273,7 @@ def _render_timeline(pid: str, ts_from: str | None, ts_to: str | None):
         return
 
     # Narrative list (readable in Discord/terminal)
-    lines = ["- " + render_event_line(dict(r)) for r in rows[:200]]
+    lines = ["- " + render_event_line(r) for r in rows[:200]]
     if len(rows) > 200:
         lines.append("- … (trimmed) …")
         lines.append("- Tip: use search with a narrower time range for full output")
@@ -303,31 +282,18 @@ def _render_timeline(pid: str, ts_from: str | None, ts_to: str | None):
 
 def _render_partners(pid: str, ts_from: str | None, ts_to: str | None):
     """Top partners without printing a huge trace graph."""
-    conn = get_db()
-    cur = conn.cursor()
+    rows = search_events(ids=[pid], ts_from=ts_from, ts_to=ts_to, limit=2000)
+    counts = {}
+    for ev in rows:
+        if ev.src_id == pid and ev.dst_id:
+            key = (ev.dst_id, ev.dst_name)
+        elif ev.dst_id == pid and ev.src_id:
+            key = (ev.src_id, ev.src_name)
+        else:
+            continue
+        counts[key] = counts.get(key, 0) + 1
 
-    where = ["(src_id=? OR dst_id=?)"]
-    params: list = [pid, pid]
-    if ts_from:
-        where.append("ts >= ?")
-        params.append(ts_from)
-    if ts_to:
-        where.append("ts <= ?")
-        params.append(ts_to)
-
-    top_partners = cur.execute(f"""
-        SELECT
-          CASE WHEN src_id=? THEN dst_id ELSE src_id END partner_id,
-          CASE WHEN src_id=? THEN dst_name ELSE src_name END partner_name,
-          COUNT(*) c
-        FROM events
-        WHERE {' AND '.join(where)}
-        GROUP BY partner_id, partner_name
-        ORDER BY c DESC
-        LIMIT 25
-    """, [pid, pid] + params).fetchall()
-
-    conn.close()
+    top_partners = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:25]
 
     title = f"Top partners for ID {pid}"
     if ts_from or ts_to:
@@ -338,11 +304,11 @@ def _render_partners(pid: str, ts_from: str | None, ts_to: str | None):
         console.print("No partner interactions found for the requested filters.")
         return
 
-    for i, r in enumerate(top_partners, start=1):
-        pid2 = r["partner_id"] or ""
-        pname = r["partner_name"] or ""
-        c = r["c"]
-        console.print(f"{i:>2}. {pname}[{pid2}] — {c}")
+    for i, (partner, count) in enumerate(top_partners, start=1):
+        pid2, pname = partner
+        pid2 = pid2 or ""
+        pname = pname or ""
+        console.print(f"{i:>2}. {pname}[{pid2}] — {count}")
 
 
 def ask_dispatch(question: str):
@@ -353,12 +319,21 @@ def ask_dispatch(question: str):
         return
 
     if intent.kind == "report":
-        out = build_case_file(intent.pid)
-        console.print(Panel(f"Report pack created: {out}", title="ASK/REPORT"))
+        case_dir, events, identities = build_case_file(intent.pid)
+        render_report(intent.pid, case_dir, events, identities)
         return
 
     if intent.kind == "summary":
-        summary_for_id(intent.pid)
+        summary = summary_for_id(intent.pid)
+        render_summary(
+            summary["pid"],
+            summary["events"],
+            summary["event_counts"],
+            summary["money_in"],
+            summary["money_out"],
+            summary["top_partners"],
+            summary["collapse"],
+        )
         return
 
     if intent.kind == "partners":
@@ -371,7 +346,7 @@ def ask_dispatch(question: str):
 
     if intent.kind == "trace":
         events, nodes = trace(intent.pid, depth=2, item_filter=None)
-        render_trace_story(intent.pid, events, nodes, depth=2, item_filter=None)
+        render_trace(intent.pid, events, nodes, depth=2, item_filter=None)
         return
 
     if intent.kind == "item_story":
@@ -383,14 +358,14 @@ def ask_dispatch(question: str):
     if intent.kind == "banking":
         rows = search_events(ids=[intent.pid], event_type=None, ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
         # Filter banking-ish types in-memory to keep search() simple.
-        rows2 = [r for r in rows if (r["event_type"] or "") in {"bank_transfer", "bank_deposit", "bank_withdraw", "phone_add", "phone_remove", "ofera_bani"}]
+        rows2 = [r for r in rows if (r.event_type or "") in {"bank_transfer", "bank_deposit", "bank_withdraw", "phone_add", "phone_remove", "ofera_bani"}]
         console.print(Panel(f"Banking review for ID {intent.pid}", title="ASK"))
         render_search(rows2)
         return
 
     if intent.kind == "vehicles":
         rows = search_events(ids=[intent.pid], ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
-        rows2 = [r for r in rows if (r["event_type"] or "").startswith("vehicle_")]
+        rows2 = [r for r in rows if (r.event_type or "").startswith("vehicle_")]
         console.print(Panel(f"Vehicle activity for ID {intent.pid}", title="ASK"))
         render_search(rows2)
         return
@@ -403,7 +378,7 @@ def ask_dispatch(question: str):
 
     if intent.kind == "telefon":
         rows = search_events(ids=[intent.pid], ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
-        rows2 = [r for r in rows if (r["event_type"] or "") in {"phone_add", "phone_remove"}]
+        rows2 = [r for r in rows if (r.event_type or "") in {"phone_add", "phone_remove"}]
         console.print(Panel(f"Telefon events for ID {intent.pid}", title="ASK"))
         render_search(rows2)
         console.print("\n[dim]Pairing is not forced in ASK mode yet. Use normal views to investigate matches.[/dim]")
@@ -415,24 +390,3 @@ def ask_dispatch(question: str):
 
     # Default timeline
     _render_timeline(intent.pid, intent.ts_from, intent.ts_to)
-    # between A and B (english)
-    m = re.search(r"\bbetween\s+(.+?)\s+and\s+(.+?)\b", qn, re.I)
-    if m:
-        a = _parse_user_dt(m.group(1))
-        b_raw = m.group(2)
-        b = _parse_user_dt(b_raw)
-        # If end time omits date, reuse date from start
-        if a and not b:
-            # try parse as time only
-            tm = re.match(r"^\s*(\d{1,2}:\d{2})(?::\d{2})?\s*$", b_raw)
-            if tm:
-                try:
-                    import datetime as _dt
-                    aa = _dt.datetime.fromisoformat(a.replace("Z","+00:00"))
-                    hh,mm = [int(x) for x in tm.group(1).split(":")]
-                    bb = aa.replace(hour=hh, minute=mm, second=0, microsecond=0)
-                    b = bb.isoformat().replace("+00:00","Z")
-                except Exception:
-                    b = None
-        return a, b
-

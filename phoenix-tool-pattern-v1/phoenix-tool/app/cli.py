@@ -7,9 +7,9 @@ from .ingest import load_logs
 from .normalize import normalize_all
 from .parse import parse_events
 from .identity import rebuild_identities, show_identity
-from .search import search_events, render_search
-from .trace import trace, render_trace_story
-from .flow import build_flow, render_flow
+from .repository import search_events, count_search_events
+from .trace import trace
+from .flow import build_flow
 from .summary import summary_for_id
 from .report import build_case_file
 from .save import save_payload
@@ -19,7 +19,16 @@ from .audit import audit_unparsed
 from .debug import make_debug_bundle
 from .status import show_status
 from .ask import ask_dispatch
-from .storages import render_storages
+from .storages import compute_storage_summary
+from .render import (
+    render_search,
+    render_trace,
+    render_flow,
+    render_summary,
+    render_storages,
+    render_report,
+    render_audit,
+)
 
 console = Console()
 
@@ -263,13 +272,26 @@ def main(argv=None):
             ts_to=kv.get("to") or kv.get("end") or kv.get("until"),
             limit=int(kv.get("limit", "500")),
         )
+        matched = count_search_events(
+            ids=ids,
+            between_ids=between_ids,
+            name=kv.get("name"),
+            item=kv.get("item"),
+            event_type=kv.get("type"),
+            min_money=int(kv.get("min$", "0")) if "min$" in kv else None,
+            max_money=int(kv.get("max$", "0")) if "max$" in kv else None,
+            ts_from=kv.get("from") or kv.get("start") or kv.get("since"),
+            ts_to=kv.get("to") or kv.get("end") or kv.get("until"),
+        )
         meta = {
             'title': 'SEARCH — pattern view',
             'query': ' '.join([f"{k}={v}" for k,v in kv.items()]),
             'window': f"{kv.get('from') or kv.get('start') or kv.get('since') or 'ALL'} → {kv.get('to') or kv.get('end') or kv.get('until') or 'ALL'}",
             'limit': int(kv.get('limit', '500')),
+            'collapse': kv.get('collapse', 'smart'),
             'focus_id': (ids[0] if ids and len(ids)==1 else None),
             'between_ids': between_ids,
+            'matched': matched,
         }
         render_search(rows, meta)
         return 0
@@ -291,7 +313,7 @@ def main(argv=None):
         depth = int(kv.get("depth", "2"))
         item = kv.get("item")
         events, nodes = trace(pid, depth=depth, item_filter=item)
-        render_trace_story(pid, events, nodes, depth, item)
+        render_trace(pid, events, nodes, depth, item)
         return 0
 
     if cmd == "flow":
@@ -330,15 +352,25 @@ def main(argv=None):
         if not args:
             console.print("[red]Usage:[/red] summary <id>")
             return 1
-        summary_for_id(args[0])
+        kv = _parse_kv_args(args[1:])
+        summary = summary_for_id(args[0], collapse=kv.get("collapse"))
+        render_summary(
+            summary["pid"],
+            summary["events"],
+            summary["event_counts"],
+            summary["money_in"],
+            summary["money_out"],
+            summary["top_partners"],
+            summary["collapse"],
+        )
         return 0
 
     if cmd == "report":
         if not args:
             console.print("[red]Usage:[/red] report <id>")
             return 1
-        out = build_case_file(args[0])
-        console.print(Panel(f"Case file: {out}", title="REPORT"))
+        case_dir, events, identities = build_case_file(args[0])
+        render_report(args[0], case_dir, events, identities)
         return 0
 
     if cmd == "storages":
@@ -347,7 +379,13 @@ def main(argv=None):
             return 1
         pid = args[0]
         kv = _parse_kv_args(args[1:])
-        render_storages(pid, container_filter=kv.get("container"), ts_from=kv.get("from"), ts_to=kv.get("to"))
+        containers, warnings, negative_count = compute_storage_summary(
+            pid,
+            container_filter=kv.get("container"),
+            ts_from=kv.get("from"),
+            ts_to=kv.get("to"),
+        )
+        render_storages(pid, kv.get("container"), containers, warnings, negative_count)
         return 0
 
     if cmd in ("ask", "chat"):
@@ -382,8 +420,8 @@ def main(argv=None):
         return 0
 
     if cmd == "audit":
-        out = audit_unparsed()
-        console.print(Panel(str(out), title="AUDIT"))
+        out_path, total_groups, limit_groups = audit_unparsed()
+        render_audit(out_path, total_groups, limit_groups)
         return 0
 
     if cmd == "status":
