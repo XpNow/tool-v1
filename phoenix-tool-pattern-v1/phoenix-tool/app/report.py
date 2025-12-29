@@ -1,15 +1,15 @@
+from __future__ import annotations
+
 from pathlib import Path
 from collections import defaultdict
-from rich.console import Console
-from rich.panel import Panel
 
-from .db import get_db
-from .util import actor_label, render_event_line, format_money_ro
-
-console = Console()
+from .models import Event
+from .repository import fetch_events_for_id, fetch_identities
+from .util import render_event_line, format_money_ro
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 REPORTS_DIR = BASE_DIR / "output" / "reports"
+
 
 def build_case_file(pid: str):
     """
@@ -22,33 +22,14 @@ def build_case_file(pid: str):
     case_dir = REPORTS_DIR / f"ID_{pid}"
     case_dir.mkdir(parents=True, exist_ok=True)
 
-    conn = get_db()
-    cur = conn.cursor()
+    identities = fetch_identities(pid)
+    events = fetch_events_for_id(pid)
 
-    # Identity header: names/IPs seen
-    ids = cur.execute(
-        """SELECT name, ip, sightings
-             FROM identities
-             WHERE player_id=?
-             ORDER BY sightings DESC""", (pid,)
-    ).fetchall()
+    names = [r.name for r in identities if r.name]
+    ips = [r.ip for r in identities if r.ip]
 
-    names = [r["name"] for r in ids if r["name"]]
-    ips = [r["ip"] for r in ids if r["ip"]]
-
-    # Events involving this ID
-    evs = cur.execute(
-        """SELECT ts, ts_raw, event_type, src_id, src_name, dst_id, dst_name, item, qty, money, container
-             FROM events
-             WHERE src_id=? OR dst_id=?
-             ORDER BY (ts IS NULL) ASC, ts ASC, id ASC""", (pid, pid)
-    ).fetchall()
-
-    conn.close()
-
-    # Build summaries
-    money_in = sum(int(e["money"] or 0) for e in evs if e["dst_id"] == pid)
-    money_out = sum(int(e["money"] or 0) for e in evs if e["src_id"] == pid)
+    money_in = sum(int(e.money or 0) for e in events if e.dst_id == pid)
+    money_out = sum(int(e.money or 0) for e in events if e.src_id == pid)
 
     items_in = defaultdict(int)
     items_out = defaultdict(int)
@@ -63,43 +44,38 @@ def build_case_file(pid: str):
     dropped_lines = []
     other_lines = []
 
-    for e in evs:
-        et = e["event_type"]
-        # partners
-        if e["src_id"] == pid and e["dst_id"]:
-            partners[f"{e['dst_name'] or ''}[{e['dst_id']}]".strip()] += 1
-        elif e["dst_id"] == pid and e["src_id"]:
-            partners[f"{e['src_name'] or ''}[{e['src_id']}]".strip()] += 1
+    for e in events:
+        et = e.event_type
+        if e.src_id == pid and e.dst_id:
+            partners[f"{e.dst_name or ''}[{e.dst_id}]".strip()] += 1
+        elif e.dst_id == pid and e.src_id:
+            partners[f"{e.src_name or ''}[{e.src_id}]".strip()] += 1
 
-        # containers
-        if e["container"]:
-            containers_used.add(e["container"])
+        if e.container:
+            containers_used.add(e.container)
 
-        # items summaries
         if et in ("ofera_item", "container_put", "container_remove", "drop_item"):
-            item = e["item"] or ""
-            qty = int(e["qty"] or 0)
-            if e["dst_id"] == pid:
+            item = e.item or ""
+            qty = int(e.qty or 0)
+            if e.dst_id == pid:
                 items_in[item] += qty
-            if e["src_id"] == pid:
+            if e.src_id == pid:
                 items_out[item] += qty
 
-        # categorize into files
-        line = render_event_line(dict(e))
+        line = render_event_line(e)
         if et in ("bank_transfer", "ofera_bani", "phone_add", "phone_remove", "deposit", "withdraw", "bank_deposit", "bank_withdraw"):
             banking_lines.append(line)
         elif et in ("container_put", "container_remove"):
             storage_lines.append(line)
-        elif et == "drop_item" and e["src_id"] == pid:
+        elif et == "drop_item" and e.src_id == pid:
             dropped_lines.append(line)
-        elif e["dst_id"] == pid:
+        elif e.dst_id == pid:
             received_lines.append(line)
-        elif e["src_id"] == pid:
+        elif e.src_id == pid:
             given_lines.append(line)
         else:
             other_lines.append(line)
 
-    # Write files
     header = []
     header.append(f"ID: {pid}")
     if names:
@@ -111,15 +87,14 @@ def build_case_file(pid: str):
     header.append(f"Money OUT: {format_money_ro(money_out)}")
     header.append("")
 
-    # Items
     if items_in:
         header.append("Top items received:")
-        for k,v in sorted(items_in.items(), key=lambda kv: kv[1], reverse=True)[:25]:
+        for k, v in sorted(items_in.items(), key=lambda kv: kv[1], reverse=True)[:25]:
             header.append(f"  - {k}: {v}")
         header.append("")
     if items_out:
         header.append("Top items given:")
-        for k,v in sorted(items_out.items(), key=lambda kv: kv[1], reverse=True)[:25]:
+        for k, v in sorted(items_out.items(), key=lambda kv: kv[1], reverse=True)[:25]:
             header.append(f"  - {k}: {v}")
         header.append("")
 
@@ -131,7 +106,7 @@ def build_case_file(pid: str):
 
     if partners:
         header.append("Top partners (by count):")
-        for k,v in sorted(partners.items(), key=lambda kv: kv[1], reverse=True)[:25]:
+        for k, v in sorted(partners.items(), key=lambda kv: kv[1], reverse=True)[:25]:
             header.append(f"  - {k}: {v}")
         header.append("")
 
@@ -143,5 +118,4 @@ def build_case_file(pid: str):
     (case_dir / "dropped.txt").write_text("\n".join(dropped_lines).strip() + "\n", encoding="utf-8")
     (case_dir / "other.txt").write_text("\n".join(other_lines).strip() + "\n", encoding="utf-8")
 
-    console.print(Panel(str(case_dir), title="CASE FILE GENERATED"))
-    return str(case_dir)
+    return str(case_dir), events, identities

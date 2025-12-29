@@ -2,8 +2,14 @@ from pathlib import Path
 
 from rich.console import Console
 
-from app import report, search, storages, summary
+from app import report
 from app.search import count_search_events, search_events
+from app.storages import compute_storage_summary
+from app.summary import summary_for_id
+from app.render import render_search, render_storages, render_summary
+from app.render import search as render_search_module
+from app.render import storages as render_storages_module
+from app.render import summary as render_summary_module
 
 
 SNAPSHOT_DIR = Path(__file__).resolve().parent / "snapshots"
@@ -33,8 +39,8 @@ def test_snapshot_search_id(loaded_db, monkeypatch):
         "focus_id": "101",
         "matched": matched,
     }
-    console = _capture_console(monkeypatch, search)
-    search.render_search(rows, meta)
+    console = _capture_console(monkeypatch, render_search_module)
+    render_search(rows, meta)
     _assert_snapshot("search_id.txt", console.export_text())
 
 
@@ -50,32 +56,42 @@ def test_snapshot_search_between(loaded_db, monkeypatch):
         "between_ids": ["101", "202"],
         "matched": matched,
     }
-    console = _capture_console(monkeypatch, search)
-    search.render_search(rows, meta)
+    console = _capture_console(monkeypatch, render_search_module)
+    render_search(rows, meta)
     _assert_snapshot("search_between.txt", console.export_text())
 
 
 def test_snapshot_storages(loaded_db, monkeypatch):
-    console = _capture_console(monkeypatch, storages)
-    storages.render_storages("101")
+    console = _capture_console(monkeypatch, render_storages_module)
+    containers, warnings, negative_count = compute_storage_summary("101")
+    render_storages("101", None, containers, warnings, negative_count)
     _assert_snapshot("storages.txt", console.export_text())
 
 
 def test_snapshot_storages_container(loaded_db, monkeypatch):
-    console = _capture_console(monkeypatch, storages)
-    storages.render_storages("101", container_filter="Locker A")
+    console = _capture_console(monkeypatch, render_storages_module)
+    containers, warnings, negative_count = compute_storage_summary("101", container_filter="Locker A")
+    render_storages("101", "Locker A", containers, warnings, negative_count)
     _assert_snapshot("storages_container.txt", console.export_text())
 
 
 def test_snapshot_summary(loaded_db, monkeypatch):
-    console = _capture_console(monkeypatch, summary)
-    summary.summary_for_id("101")
+    console = _capture_console(monkeypatch, render_summary_module)
+    summary = summary_for_id("101")
+    render_summary(
+        summary["pid"],
+        summary["events"],
+        summary["event_counts"],
+        summary["money_in"],
+        summary["money_out"],
+        summary["top_partners"],
+        summary["collapse"],
+    )
     _assert_snapshot("summary.txt", console.export_text())
 
 
 def test_report_files_created(loaded_db, monkeypatch, tmp_path):
-    console = _capture_console(monkeypatch, report)
-    case_dir = report.build_case_file("101")
+    case_dir, _events, _identities = report.build_case_file("101")
     assert Path(case_dir).exists()
     assert (Path(case_dir) / "identity_and_totals.txt").exists()
     assert (Path(case_dir) / "received.txt").exists()

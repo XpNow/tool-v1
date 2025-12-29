@@ -106,23 +106,29 @@ def actor_label(name: str | None, pid: str | None) -> str:
     return ""
 
 
-def render_event_line(ev: dict) -> str:
+def _read_event_value(ev, key, default=None):
+    if isinstance(ev, dict):
+        return ev.get(key, default)
+    return getattr(ev, key, default)
+
+
+def render_event_line(ev) -> str:
     """
     Produce the locked narrative line format:
     DD.MM.YYYY HH:MM - Name[ID] <verb> ... (mixed EN/RO allowed)
     """
-    t = format_ts_display(ev.get("ts"), ev.get("ts_raw")).strip()
+    t = format_ts_display(_read_event_value(ev, "ts"), _read_event_value(ev, "ts_raw")).strip()
     if not t:
-        t = format_ts_display(None, ev.get("ts_raw")).strip()
+        t = format_ts_display(None, _read_event_value(ev, "ts_raw")).strip()
 
-    et = ev.get("event_type") or ""
-    src = actor_label(ev.get("src_name"), ev.get("src_id"))
-    dst = actor_label(ev.get("dst_name"), ev.get("dst_id"))
-    item = ev.get("item") or ""
-    qty_val = ev.get("qty")
+    et = _read_event_value(ev, "event_type") or ""
+    src = actor_label(_read_event_value(ev, "src_name"), _read_event_value(ev, "src_id"))
+    dst = actor_label(_read_event_value(ev, "dst_name"), _read_event_value(ev, "dst_id"))
+    item = _read_event_value(ev, "item") or ""
+    qty_val = _read_event_value(ev, "qty")
     qty = int(qty_val) if qty_val is not None else None
-    money = int(ev.get("money") or 0)
-    container = ev.get("container") or "UNKNOWN"
+    money = int(_read_event_value(ev, "money") or 0)
+    container = _read_event_value(ev, "container") or "UNKNOWN"
 
     prefix = f"{t} - " if t else ""
 
@@ -149,7 +155,7 @@ def render_event_line(ev: dict) -> str:
     if et == "perchezitie_remove":
         # victim id is stored in dst_id
         q = f"{qty}x" if (qty is not None and qty != 0) else "?x"
-        victim = ev.get("dst_id") or "UNKNOWN"
+        victim = _read_event_value(ev, "dst_id") or "UNKNOWN"
         return f"{prefix}{src} took {q} {item} from ID {victim} (PERCHEZITIE)".strip()
 
     if et == "drop_item":
@@ -213,19 +219,19 @@ def build_warning_lines(
     ]
 
 
-def last_known_location_from_chain(chain: list[dict], direction: str) -> str:
+def last_known_location_from_chain(chain: list, direction: str) -> str:
     """Return last proven holder/container for a flow chain (per locked rule)."""
     if not chain:
         return "UNKNOWN"
     last = chain[-1]
-    et = last.get("event_type")
+    et = _read_event_value(last, "event_type")
 
     if et in ("container_put", "container_remove"):
-        return last.get("container") or "UNKNOWN"
+        return _read_event_value(last, "container") or "UNKNOWN"
 
     if et == "perchezitie_remove":
         # victim id is stored in dst_id; location = robbed from victim
-        victim = last.get("dst_id") or "UNKNOWN"
+        victim = _read_event_value(last, "dst_id") or "UNKNOWN"
         return f"PERCHEZITIE_FROM_{victim}"
 
     if et == "drop_item":
@@ -235,7 +241,7 @@ def last_known_location_from_chain(chain: list[dict], direction: str) -> str:
         return "VEHICLE_ENDPOINT"
 
     # otherwise last proven holder is the counterparty at the end of the chain
-    holder = last.get("dst_id") if direction.lower() == "out" else last.get("src_id")
+    holder = _read_event_value(last, "dst_id") if direction.lower() == "out" else _read_event_value(last, "src_id")
     if holder:
         return f"with ID {holder}"
     return "UNKNOWN"
