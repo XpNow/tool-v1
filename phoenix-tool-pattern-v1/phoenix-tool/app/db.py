@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from pathlib import Path
 
@@ -5,7 +6,8 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-DB_PATH = DATA_DIR / "phoenix.db"
+_ENV_DB = os.environ.get("PHOENIX_DB")
+DB_PATH = Path(_ENV_DB).expanduser().resolve() if _ENV_DB else DATA_DIR / "phoenix.db"
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -34,6 +36,7 @@ def init_db():
         line_no INTEGER NOT NULL,
         ts TEXT,
         ts_raw TEXT,
+        timestamp_quality TEXT,
         text TEXT NOT NULL,
         FOREIGN KEY(raw_log_id) REFERENCES raw_logs(id)
     )
@@ -73,6 +76,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ts TEXT,
         ts_raw TEXT,
+        timestamp_quality TEXT,
         event_type TEXT NOT NULL,
         src_id TEXT,
         src_name TEXT,
@@ -83,6 +87,8 @@ def init_db():
         money INTEGER,
         container TEXT,
         raw_log_id INTEGER,
+        line_no INTEGER,
+        source_file TEXT,
         FOREIGN KEY(raw_log_id) REFERENCES raw_logs(id)
     )
     """)
@@ -101,6 +107,18 @@ def init_db():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_norm_raw_line ON normalized_lines(raw_log_id, line_no)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_raw_source ON raw_logs(source_file)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_norm_raw ON normalized_lines(raw_log_id)")
+    cols = {row[1] for row in cur.execute("PRAGMA table_info(normalized_lines)").fetchall()}
+    if "timestamp_quality" not in cols:
+        cur.execute("ALTER TABLE normalized_lines ADD COLUMN timestamp_quality TEXT")
+
+    cols = {row[1] for row in cur.execute("PRAGMA table_info(events)").fetchall()}
+    if "timestamp_quality" not in cols:
+        cur.execute("ALTER TABLE events ADD COLUMN timestamp_quality TEXT")
+    if "line_no" not in cols:
+        cur.execute("ALTER TABLE events ADD COLUMN line_no INTEGER")
+    if "source_file" not in cols:
+        cur.execute("ALTER TABLE events ADD COLUMN source_file TEXT")
+
     cur.execute("CREATE INDEX IF NOT EXISTS idx_norm_ts ON normalized_lines(ts)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_events_src ON events(src_id)")

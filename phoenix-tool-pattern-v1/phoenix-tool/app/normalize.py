@@ -102,9 +102,9 @@ def _base_date_from_filename(source_file: str | None) -> datetime | None:
     return None
 
 
-def _parse_marker(ts_raw: str, base_date: datetime | None) -> str | None:
+def _parse_marker(ts_raw: str, base_date: datetime | None) -> tuple[str | None, str]:
     """
-    Parse marker line -> ISO timestamp (UTC Z) or None.
+    Parse marker line -> (ISO timestamp or None, timestamp_quality).
     Supports absolute (self-contained) and relative (needs base_date).
     """
 
@@ -114,9 +114,9 @@ def _parse_marker(ts_raw: str, base_date: datetime | None) -> str | None:
         d, mo, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
         hh, mm = int(m.group(4)), int(m.group(5))
         try:
-            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc))
+            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc)), "ABSOLUTE"
         except Exception:
-            return None
+            return None, "UNKNOWN"
 
     # Absolute: YYYY-MM-DD HH:MM
     m = RE_ABS_TS_YMD.search(ts_raw)
@@ -124,9 +124,9 @@ def _parse_marker(ts_raw: str, base_date: datetime | None) -> str | None:
         y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
         hh, mm = int(m.group(4)), int(m.group(5))
         try:
-            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc))
+            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc)), "ABSOLUTE"
         except Exception:
-            return None
+            return None, "UNKNOWN"
 
     # Absolute: MM/DD/YYYY HH:MM AM/PM (common in Discord exports)
     m = RE_ABS_TS_MDY12.search(ts_raw)
@@ -139,13 +139,13 @@ def _parse_marker(ts_raw: str, base_date: datetime | None) -> str | None:
         if ap == "AM" and hh == 12:
             hh = 0
         try:
-            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc))
+            return _iso_z(datetime(y, mo, d, hh, mm, tzinfo=timezone.utc)), "ABSOLUTE"
         except Exception:
-            return None
+            return None, "UNKNOWN"
 
     # Relative 12h: Today/Yesterday at 1:07 PM OR 1:07 PM
     m = RE_REL_TS.search(ts_raw)
-    if m and base_date is not None:
+    if m:
         rel = (m.group(1) or "").lower()
         hh = int(m.group(2))
         mm = int(m.group(3))
@@ -156,34 +156,40 @@ def _parse_marker(ts_raw: str, base_date: datetime | None) -> str | None:
         if ap == "AM" and hh == 12:
             hh = 0
 
+        if base_date is None:
+            return None, "RELATIVE"
+
         day = base_date.date()
         if rel == "yesterday":
             day = (base_date - timedelta(days=1)).date()
 
         try:
             dt = datetime(day.year, day.month, day.day, hh, mm, tzinfo=timezone.utc)
-            return _iso_z(dt)
+            return _iso_z(dt), "ANCHORED"
         except Exception:
-            return None
+            return None, "UNKNOWN"
 
     # Relative 24h: Today/Yesterday at 13:07 OR 13:07
     m = RE_REL_24H.search(ts_raw)
-    if m and base_date is not None:
+    if m:
         rel = (m.group(1) or "").lower()
         hh = int(m.group(2))
         mm = int(m.group(3))
 
+        if base_date is None:
+            return None, "RELATIVE"
+
         day = base_date.date()
         if rel == "yesterday":
             day = (base_date - timedelta(days=1)).date()
 
         try:
             dt = datetime(day.year, day.month, day.day, hh, mm, tzinfo=timezone.utc)
-            return _iso_z(dt)
+            return _iso_z(dt), "ANCHORED"
         except Exception:
-            return None
+            return None, "UNKNOWN"
 
-    return None
+    return None, "UNKNOWN"
 
 
 def normalize_all():
@@ -211,13 +217,12 @@ def normalize_all():
     for r in raws:
         raw_id = r["id"]
         source_file = r["source_file"]
-        loaded_at = r["loaded_at"] if has_loaded_at else None
-
-        # base date priority: filename -> loaded_at -> None
-        base_dt = _base_date_from_filename(source_file) or _base_date_from_loaded_at(loaded_at)
+        # base date priority: explicit filename date -> None
+        base_dt = _base_date_from_filename(source_file)
 
         last_ts_raw = None
         last_ts_iso = None
+        last_ts_quality = "UNKNOWN"
 
         # normalized sequence line number (1..N per raw_log)
         norm_no = 0
@@ -250,17 +255,17 @@ def normalize_all():
                 or RE_ABS_TS_MDY12.search(s)
             ):
                 last_ts_raw = s
-                last_ts_iso = _parse_marker(s, base_dt)  # may be None; ts_raw still kept
+                last_ts_iso, last_ts_quality = _parse_marker(s, base_dt)  # may be None; ts_raw still kept
                 continue
 
             # insert meaningful normalized line
             norm_no += 1
             cur.execute(
                 """
-                INSERT INTO normalized_lines(raw_log_id, line_no, ts, ts_raw, text)
-                VALUES (?,?,?,?,?)
+                INSERT INTO normalized_lines(raw_log_id, line_no, ts, ts_raw, timestamp_quality, text)
+                VALUES (?,?,?,?,?,?)
                 """,
-                (raw_id, norm_no, last_ts_iso, last_ts_raw, s),
+                (raw_id, norm_no, last_ts_iso, last_ts_raw, last_ts_quality, s),
             )
             inserted += 1
 
@@ -268,4 +273,3 @@ def normalize_all():
     conn.close()
     console.print(Panel(f"Normalized lines inserted: {inserted}", title="NORMALIZE"))
     return inserted
-
