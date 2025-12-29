@@ -1,0 +1,407 @@
+import sys
+from rich.console import Console
+from rich.panel import Panel
+
+from .db import init_db
+from .ingest import load_logs
+from .normalize import normalize_all
+from .parse import parse_events
+from .identity import rebuild_identities, show_identity
+from .search import search_events, render_search
+from .trace import trace, render_trace_story
+from .flow import build_flow, render_flow
+from .summary import summary_for_id
+from .report import build_case_file
+from .save import save_payload
+from .export import export_tag
+from .hub import build_hub
+from .audit import audit_unparsed
+from .debug import make_debug_bundle
+from .status import show_status
+from .ask import ask_dispatch
+from .storages import render_storages
+
+console = Console()
+
+HELP_TEXT = """Phoenix Investigation Tool
+
+Commands:
+
+help
+  Show this help
+
+load <path>
+  Load .txt logs into database (raw evidence)
+
+normalize
+  Normalize raw logs into clean lines with timestamps
+
+parse
+  Parse normalized lines into structured events
+
+identities
+  Rebuild identity observations (ID <-> name <-> IP)
+
+identity <id|name>
+  Show identity info for one ID or one name
+
+search [filters]
+  Examples:
+    search id=633
+    search name=VataRman
+    search type=bank_transfer min$=1000000
+    search id=633 item=\"Navy Revolver\"
+
+trace <id> [depth=2] [item=\"...\"]
+
+flow <id> [dir=in|out] [depth=4] [window=120] [item=\"...\"]
+  Strict chain tracing (time coherent when timestamps exist)
+
+summary <id>
+  Quick overview (counts, totals, top partners)
+
+report <id>
+  Generate per-ID case file folder (output/reports/ID_<id>/)
+
+storages <id> [container=NAME] [from=ISO] [to=ISO]
+  Best-effort container state: sums container_put minus container_remove.
+  If container= is provided, prints current contents for matching containers.
+
+ask <question>
+  Natural-language helper (RO/EN). Maps your question to existing commands safely.
+  Examples:
+    ask Arata-mi daca id 161 a dat iteme si a primit la schimb ceva
+    ask Quick timeline for ID 161 from 19.12.2025 00:00 to 19.12.2025 03:00
+
+save tag=NAME kind=trace|flow|search|summary report=<id> [extra args...]
+  Save a snapshot for exporting
+
+export <tag> fmt=txt|html|json
+  Export saved snapshot to output/exports/
+
+hub
+  Build local HTML manual (output/hub/index.html)
+
+audit
+  Build unparsed-line audit clusters (output/audit/audit_unparsed.txt)
+
+status
+  Show parser/db coverage counts (raw logs, normalized lines, events by type)
+
+debug
+  Create a debug bundle zip (output/debug/)
+"""
+
+
+def _parse_kv_args(args: list[str]) -> dict:
+    out = {}
+    for a in args:
+        if "=" in a:
+            k, v = a.split("=", 1)
+            out[k.strip()] = v.strip().strip('"')
+    return out
+
+
+def _has_kv(args: list[str]) -> bool:
+    return any("=" in a for a in args)
+
+
+def _parse_flow_shortcut_args(args: list[str]):
+    """Parse flow shortcut args after <id>. Returns (direction, depth, window, item_filter)."""
+    direction = None
+    depth = None
+    window = None
+    item_parts: list[str] = []
+
+    for a in args:
+        al = a.lower().strip()
+        if al in ("in", "out", "both"):
+            direction = al
+            continue
+        if al.isdigit():
+            if depth is None:
+                depth = int(al)
+            elif window is None:
+                window = int(al)
+            else:
+                # ignore extra numbers
+                pass
+            continue
+        item_parts.append(a)
+
+    item = " ".join(item_parts).strip() or None
+    return direction, depth, window, item
+
+
+def _parse_trace_shortcut_args(args: list[str]):
+    """Parse trace shortcut args after <id>. Returns (depth, item_filter)."""
+    depth = None
+    item_parts: list[str] = []
+    for a in args:
+        if a.isdigit() and depth is None:
+            depth = int(a)
+        else:
+            item_parts.append(a)
+    item = " ".join(item_parts).strip() or None
+    return depth, item
+
+
+def _parse_search_shortcut_args(args: list[str]):
+    """Parse search shortcut args. Returns (ids, name, item, event_type, limit)."""
+    ids = None
+    event_type = None
+    limit = None
+    item_parts: list[str] = []
+
+    # between ids: <id1> - <id2>
+    if len(args) >= 3 and args[0].isdigit() and args[1] == "-" and args[2].isdigit():
+        ids = [args[0], args[2]]
+        rest = args[3:]
+    elif args and args[0].isdigit():
+        ids = [args[0]]
+        rest = args[1:]
+    else:
+        rest = args
+
+    # last numeric token => limit
+    if rest and rest[-1].isdigit():
+        limit = int(rest[-1])
+        rest = rest[:-1]
+
+    # allow a simple type keyword (transfer/ofera/etc.) by treating a single token that matches an event_type
+    # if it doesn't match, it becomes part of item search.
+    if rest:
+        # If user wrote something like: search 123 transfer
+        if len(rest) == 1 and rest[0].isidentifier():
+            event_type = rest[0]
+        else:
+            item_parts = rest
+
+    item = " ".join(item_parts).strip() or None
+    return ids, None, item, event_type, limit
+
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    if not argv or argv[0] in ("help", "-h", "--help"):
+        console.print(Panel(HELP_TEXT.strip(), title="HELP"))
+        return 0
+
+    cmd, *args = argv
+
+    # ensure DB schema
+    init_db()
+
+    if cmd == "load":
+        if not args:
+            console.print("[red]Usage:[/red] load <path>")
+            return 1
+        n = load_logs(args[0])
+        console.print(Panel(f"Raw logs loaded: {n}", title="LOAD"))
+        return 0
+
+    if cmd == "normalize":
+        n = normalize_all()
+        console.print(Panel(f"Normalized lines inserted: {n}", title="NORMALIZE"))
+        return 0
+
+    if cmd == "parse":
+        n = parse_events()
+        console.print(Panel(f"Events parsed and inserted: {n}", title="PARSE"))
+        return 0
+
+    if cmd == "identities":
+        n = rebuild_identities()
+        console.print(Panel(f"Identity sightings rebuilt: {n}", title="IDENTITIES"))
+        return 0
+
+    if cmd == "identity":
+        if not args:
+            console.print("[red]Usage:[/red] identity <id|name>")
+            return 1
+        show_identity(" ".join(args))
+        return 0
+
+    if cmd == "search":
+        # Supports both legacy key=value syntax and shortcut syntax.
+        kv = _parse_kv_args(args)
+        if not kv and args:
+            ids, name, item, et, lim = _parse_search_shortcut_args(args)
+            kv = {}
+            if ids:
+                kv["id"] = ",".join(ids)
+            if name:
+                kv["name"] = name
+            if item:
+                kv["item"] = item
+            if et:
+                kv["type"] = et
+            if lim is not None:
+                kv["limit"] = str(lim)
+
+        ids = None
+        if "id" in kv:
+            ids = [x.strip() for x in kv["id"].split(",") if x.strip()]
+
+        between_ids = None
+        if "between" in kv:
+            parts = [p.strip() for p in kv["between"].split(",") if p.strip()]
+            if len(parts)==2:
+                between_ids = parts
+
+        rows = search_events(
+            ids=ids,
+            between_ids=between_ids,
+            name=kv.get("name"),
+            item=kv.get("item"),
+            event_type=kv.get("type"),
+            min_money=int(kv.get("min$", "0")) if "min$" in kv else None,
+            max_money=int(kv.get("max$", "0")) if "max$" in kv else None,
+            ts_from=kv.get("from") or kv.get("start") or kv.get("since"),
+            ts_to=kv.get("to") or kv.get("end") or kv.get("until"),
+            limit=int(kv.get("limit", "500")),
+        )
+        meta = {
+            'title': 'SEARCH — pattern view',
+            'query': ' '.join([f"{k}={v}" for k,v in kv.items()]),
+            'window': f"{kv.get('from') or kv.get('start') or kv.get('since') or 'ALL'} → {kv.get('to') or kv.get('end') or kv.get('until') or 'ALL'}",
+            'limit': int(kv.get('limit', '500')),
+            'focus_id': (ids[0] if ids and len(ids)==1 else None),
+            'between_ids': between_ids,
+        }
+        render_search(rows, meta)
+        return 0
+
+    if cmd == "trace":
+        if not args:
+            console.print("[red]Usage:[/red] trace <id> [depth=2] [item=...]")
+            return 1
+        pid = args[0]
+        kv = _parse_kv_args(args[1:])
+        if not kv and args[1:]:
+            d2, item2 = _parse_trace_shortcut_args(args[1:])
+            kv = {}
+            if d2 is not None:
+                kv["depth"] = str(d2)
+            if item2:
+                kv["item"] = item2
+
+        depth = int(kv.get("depth", "2"))
+        item = kv.get("item")
+        events, nodes = trace(pid, depth=depth, item_filter=item)
+        render_trace_story(pid, events, nodes, depth, item)
+        return 0
+
+    if cmd == "flow":
+        if not args:
+            console.print("[red]Usage:[/red] flow <id> [dir=in|out] [depth=4] [window=120] [item=...]")
+            return 1
+        pid = args[0]
+        kv = _parse_kv_args(args[1:])
+        if not kv and args[1:]:
+            ddir, ddepth, dwindow, ditem = _parse_flow_shortcut_args(args[1:])
+            kv = {}
+            if ddir:
+                kv["dir"] = ddir
+            if ddepth is not None:
+                kv["depth"] = str(ddepth)
+            if dwindow is not None:
+                kv["window"] = str(dwindow)
+            if ditem:
+                kv["item"] = ditem
+
+        direction = kv.get("dir", "out")
+        depth = int(kv.get("depth", "4"))
+        window = int(kv.get("window", "120"))
+        item = kv.get("item")
+        if direction.lower() == "both":
+            chains_out = build_flow(pid, direction="out", depth=depth, window_minutes=window, item_filter=item)
+            chains_in = build_flow(pid, direction="in", depth=depth, window_minutes=window, item_filter=item)
+            combined = [("out", c) for c in chains_out] + [("in", c) for c in chains_in]
+            render_flow(pid, combined, direction="both")
+        else:
+            chains = build_flow(pid, direction=direction, depth=depth, window_minutes=window, item_filter=item)
+            render_flow(pid, chains, direction=direction)
+        return 0
+
+    if cmd == "summary":
+        if not args:
+            console.print("[red]Usage:[/red] summary <id>")
+            return 1
+        summary_for_id(args[0])
+        return 0
+
+    if cmd == "report":
+        if not args:
+            console.print("[red]Usage:[/red] report <id>")
+            return 1
+        out = build_case_file(args[0])
+        console.print(Panel(f"Case file: {out}", title="REPORT"))
+        return 0
+
+    if cmd == "storages":
+        if not args:
+            console.print("[red]Usage:[/red] storages <id> [container=NAME] [from=ISO] [to=ISO]")
+            return 1
+        pid = args[0]
+        kv = _parse_kv_args(args[1:])
+        render_storages(pid, container_filter=kv.get("container"), ts_from=kv.get("from"), ts_to=kv.get("to"))
+        return 0
+
+    if cmd in ("ask", "chat"):
+        if not args:
+            console.print("[red]Usage:[/red] ask <question>")
+            return 1
+        q = " ".join(args).strip()
+        ask_dispatch(q)
+        return 0
+
+    if cmd == "save":
+        kv = _parse_kv_args(args)
+        if "tag" not in kv or "kind" not in kv:
+            console.print("[red]Usage:[/red] save tag=NAME kind=trace|flow|search|summary [args...] ")
+            return 1
+        save_payload(kv['tag'], kv['kind'], kv)
+        console.print(Panel(f"Saved: {kv['tag']}", title="SAVE"))
+        return 0
+
+    if cmd == "export":
+        if not args:
+            console.print("[red]Usage:[/red] export <tag> fmt=txt|html|json")
+            return 1
+        tag = args[0]
+        kv = _parse_kv_args(args[1:])
+        export_tag(tag, fmt=kv.get("fmt", "txt"))
+        return 0
+
+    if cmd == "hub":
+        out = build_hub()
+        console.print(Panel(str(out), title="HUB"))
+        return 0
+
+    if cmd == "audit":
+        out = audit_unparsed()
+        console.print(Panel(str(out), title="AUDIT"))
+        return 0
+
+    if cmd == "status":
+        show_status()
+        return 0
+
+    if cmd == "status":
+        show_status()
+        return 0
+
+    if cmd == "debug":
+        out = make_debug_bundle()
+        console.print(Panel(str(out), title="DEBUG"))
+        return 0
+
+    console.print(Panel(f"Unknown command: {cmd}\n\n" + HELP_TEXT.strip(), title="ERROR"))
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

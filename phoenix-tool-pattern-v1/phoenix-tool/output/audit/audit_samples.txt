@@ -1,0 +1,1762 @@
+================================================================================
+RAW_LOG_ID: 1
+FILE: logs\Deposit.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/19/2025 12:02 AM
+Depunere Banca
+volta[19339] a depozitat 1.900.000$.
+AlexandruCL[294] a depozitat 15.600.000$.
+Okin[4965] a depozitat 1.800.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:14 AM
+Depunere Banca
+Mr.Edward[2113] a depozitat 2.600.000$.
+JT[223] a depozitat 16.000.000$.
+Zenkk[7213] a depozitat 360.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:31 AM
+Depunere Banca
+senorr[18552] a depozitat 780.000$.
+Dariusica[4777] a depozitat 13.800.000$.
+Zenkk[7213] a depozitat 400.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:33 AM
+Depunere Banca
+woolfy[968] a depozitat 340.000$.
+AlexandruCL[294] a depozitat 5.600.000$.
+bezea[538] a depozitat 13.660.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:54 AM
+Depunere Banca
+JT[223] a depozitat 1.250.000$.
+apple[709] a depozitat 12.000.000$.
+tigru tibetan[3952] a depozitat 110.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:23 AM
+Depunere Banca
+Anddrei[16748] a depozitat 56.000$.
+andreibosu[447] a depozitat 1.700.000$.
+woolfy[968] a depozitat 320.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:35 AM
+Depunere Banca
+andreibosu[447] a depozitat 855.000$.
+andreibosu[447] a depozitat 1.150.000$.
+Anddrei[16748] a depozitat 882.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 5:22 AM
+Depunere Banca
+
+================================================================================
+RAW_LOG_ID: 2
+FILE: logs\Ofera bani.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Ofera Bani
+Jucatorul apple[709] i-a oferit lui Mr.Edward[2113] suma de 4.200.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:01 AM
+Ofera Bani
+Jucatorul Mr.Edward[2113] i-a oferit lui Okin[4965] suma de 1.800.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:04 AM
+Ofera Bani
+Jucatorul apple[709] i-a oferit lui bezea[538] suma de 2.000.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:05 AM
+Ofera Bani
+Jucatorul Vixianne[18085] i-a oferit lui CaramiDa[1574] suma de 100.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:05 AM
+Ofera Bani
+Jucatorul Vixianne[18085] i-a oferit lui CaramiDa[1574] suma de 150.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:06 AM
+Ofera Bani
+Jucatorul JT[223] i-a oferit lui bezea[538] suma de 3.000.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:11 AM
+Ofera Bani
+Jucatorul jilavasmeker[12624] i-a oferit lui woolfy[968] suma de 1$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:20 AM
+Ofera Bani
+Jucatorul woolfy[968] i-a oferit lui deresee..[584] suma de 101.724$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:25 AM
+Ofera Bani
+Jucatorul woolfy[968] i-a oferit lui deresee..[584] suma de 100.532$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:31 AM
+Ofera Bani
+Jucatorul yaN[16472] i-a oferit lui edy[330] suma de 10.000$.
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 3
+FILE: logs\ofera par 1.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/17/2025 12:00 AM
+Ofera Item
+Jucatorul tigru tibetan[3952] i-a oferit lui Adi#[19341] - Kit Revizie(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:00 AM
+Ofera Item
+Jucatorul Okin[4965] i-a oferit lui Marioo[6252] - Kit Revizie(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:02 AM
+Ofera Item
+Jucatorul Anddrei[16748] i-a oferit lui amadeusmoft[471] - nil(x360).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:04 AM
+Ofera Item
+Jucatorul Adi#[19341] i-a oferit lui tigru tibetan[3952] - Kit Revizie(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:09 AM
+Ofera Item
+Jucatorul Laza[321] i-a oferit lui vladd[144] - Trusa de Reparat(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:10 AM
+Ofera Item
+Jucatorul Aqua[70] i-a oferit lui amadeusmoft[471] - nil(x1.000).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:12 AM
+Ofera Item
+Jucatorul Santos[7] i-a oferit lui Moga[83] - nil(x2.500.000).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:12 AM
+Ofera Item
+Jucatorul Santos[7] i-a oferit lui Panda[19541] - nil(x2.500.000).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:14 AM
+Ofera Item
+Jucatorul alex.owm[327] i-a oferit lui Aqua[70] - Armura Kevlar(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/17/2025 12:15 AM
+Ofera Item
+Jucatorul RobyTureta[105] i-a oferit lui xtr![171] - Trusa de Reparat(x2).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 4
+FILE: logs\ofera part 2.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/19/2025 12:52 AM
+Ofera Item
+Jucatorul Okin[4965] i-a oferit lui Mr.Edward[2113] - Otel(x3).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:54 AM
+Ofera Item
+Jucatorul Okin[4965] i-a oferit lui Mr.Edward[2113] - Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:54 AM
+Ofera Item
+Jucatorul Okin[4965] i-a oferit lui Mr.Edward[2113] - Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:05 AM
+Ofera Item
+Jucatorul Okin[4965] i-a oferit lui Mr.Edward[2113] - Bani Murdari(x225.000).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:26 AM
+Ofera Item
+Jucatorul Sebi[16747] i-a oferit lui Anddrei[16748] - Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:28 AM
+Ofera Item
+Jucatorul Sebi[16747] i-a oferit lui andreibosu[447] - Lant 20 [M](x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:34 AM
+Ofera Item
+Jucatorul Sebi[16747] i-a oferit lui andreibosu[447] - Lant 20 [M](x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:35 AM
+Ofera Item
+Jucatorul Anddrei[16748] i-a oferit lui Sebi[16747] - Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:43 AM
+Ofera Item
+Jucatorul CaramiDa[1574] i-a oferit lui mocan[20684] - Sfoara(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 1:53 AM
+Ofera Item
+Jucatorul MihaiSirbu[17954] i-a oferit lui mocan[20684] - Cutit Scafandru(x1).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 5
+FILE: logs\ofera part 3.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/21/2025 12:14 PM
+Ofera Item
+Jucatorul doina warrior[11091] i-a oferit lui guvernator[442] - TEC-9(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:14 PM
+Ofera Item
+Jucatorul doina warrior[11091] i-a oferit lui guvernator[442] - Gloante MACHINEPISTOL(x92).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:27 PM
+Ofera Item
+Jucatorul MihaiSirbu[17954] i-a oferit lui XRusu[15292] - Morfina(x5).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:31 PM
+Ofera Item
+Jucatorul Andrew[1028] i-a oferit lui Kes.[5466] - Telefon(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:33 PM
+Ofera Item
+Jucatorul paulsm[141] i-a oferit lui ned[481] - Plic Cocaina(x40).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:41 PM
+Ofera Item
+Jucatorul Chiron[1052] i-a oferit lui Strips[161] - Radio(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:41 PM
+Ofera Item
+Jucatorul Strips[161] i-a oferit lui Chiron[1052] - Bani Murdari(x2.000.000).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:44 PM
+Ofera Item
+Jucatorul XRusu[15292] i-a oferit lui MihaiSirbu[17954] - Gloante MACHINEPISTOL(x100).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:46 PM
+Ofera Item
+Jucatorul Strips[161] i-a oferit lui BitteN__.[1712] - Bani Murdari(x4.312.500).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:48 PM
+Ofera Item
+Jucatorul Chiron[1052] i-a oferit lui Strips[161] - Otel(x10).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 6
+FILE: logs\remat.txt
+--------------------------------------------------------------------------------
+PHOENIX LOGS
+APP
+— 12/19/2025 1:39 AM
+🚗 Remat
+Jucător: Sebi (16747) a vandut vehiculul Truffade Nero Custom [nero2] pentru suma de 4.875.000$ | GARAGE: Public
+Made by Synked•12/19/2025 1:39 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 10:48 AM
+🚗 Remat
+Jucător: XRusu (15292) a vandut vehiculul Jobuilt Hauler [hauler] pentru suma de 260.000$ | GARAGE: Utilitare
+Made by Synked•12/19/2025 10:48 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 10:49 AM
+🚗 Remat
+Jucător: XRusu (15292) a vandut vehiculul Progen Itali GTB [italigtb2] pentru suma de 715.000$ | GARAGE: Public
+Made by Synked•12/19/2025 10:49 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 11:31 AM
+🚗 Remat
+Jucător: Gabriel (13311) a vandut vehiculul Benefactor Zenith [zenith] pentru suma de 2.925.000$ | GARAGE: Public
+Made by Synked•12/19/2025 11:31 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 11:36 AM
+🚗 Remat
+Jucător: Gabriel (13311) a vandut vehiculul Truffade Adder [adder] pentru suma de 1.625.000$ | GARAGE: Public
+Made by Synked•12/19/2025 11:36 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 4:44 PM
+🚗 Remat
+Jucător: ciorba (8511) a vandut vehiculul Invetero Coquette D10 [coquette4] pentru suma de 1.755.000$ | GARAGE: Public
+Made by Synked•12/19/2025 4:44 PM
+PHOENIX LOGS
+APP
+— 12/19/2025 6:44 PM
+🚗 Remat
+Jucător: George (16890) a vandut vehiculul Glide DX800 [skidoo800R] pentru suma de 97.500$ | GARAGE: Public
+Made by Synked•12/19/2025 6:44 PM
+PHOENIX LOGS
+APP
+— 12/19/2025 6:45 PM
+🚗 Remat
+Jucător: George (16890) a vandut vehiculul Sanie Glide Sled [sled] pentru suma de 9.750$ | GARAGE: Public
+Made by Synked•12/19/2025 6:45 PM
+PHOENIX LOGS
+APP
+— 12/19/2025 6:47 PM
+🚗 Remat
+Jucător: George (16890) a vandut vehiculul Annis Remus [remus] pentru suma de 130.000$ | GARAGE: Public
+Made by Synked•12/19/2025 6:47 PM
+PHOENIX LOGS
+APP
+— 12/20/2025 5:43 PM
+🚗 Remat
+Jucător: rani1 (1503) a vandut vehiculul Lampadati Corsita [corsita] pentru suma de 975.000$ | GARAGE: Public
+Made by Synked•12/20/2025 5:43 PM
+
+================================================================================
+RAW_LOG_ID: 7
+FILE: logs\showroom.txt
+--------------------------------------------------------------------------------
+PHOENIX LOGS
+APP
+— 8:22 AM
+🚘 Showroom
+Jucător: KEVIN_TE_RUPE (10476) a achizitionat vehiculul: ⭐ Grotti [Visione] pentru suma de 20$ !
+Made by Synked•Today at 8:22 AM
+PHOENIX LOGS
+APP
+— 8:02 AM
+🚘 Showroom
+Jucător: Alberto (9568) a achizitionat vehiculul: Emperor [Ronin] pentru suma de 7.250.000$ !
+Made by Synked•Today at 8:02 AM
+PHOENIX LOGS
+APP
+— 7:04 AM
+🚘 Showroom
+Jucător: HovSep (13904) a achizitionat vehiculul: Frogger [] pentru suma de 1.750.000$ !
+Made by Synked•Today at 7:04 AM
+PHOENIX LOGS
+APP
+— 3:27 AM
+🚘 Showroom
+Jucător: ! Marius (179) a achizitionat vehiculul: BF [Club] pentru suma de 1.500$ !
+Made by Synked•Today at 3:27 AM
+PHOENIX LOGS
+APP
+— 3:27 AM
+🚘 Showroom
+Jucător: ! Marius (179) a achizitionat vehiculul: Vulcar [Ingot] pentru suma de 1.000$ !
+Made by Synked•Today at 3:27 AM
+PHOENIX LOGS
+APP
+— 3:26 AM
+🚘 Showroom
+Jucător: ! Marius (179) a achizitionat vehiculul: Truffade [Nero Supersport] pentru suma de 75.000.000$ !
+Made by Synked•Today at 3:26 AM
+PHOENIX LOGS
+APP
+— 12:06 AM
+🚘 Showroom
+Jucător: Alberto (9568) a achizitionat vehiculul: Frogger [] pentru suma de 1.750.000$ !
+Made by Synked•Today at 12:06 AM
+PHOENIX LOGS
+APP
+— Yesterday at 11:54 PM
+🚘 Showroom
+Jucător: Dragos (3) a achizitionat vehiculul: Overflod [Entity MT] pentru suma de 30.000.000$ !
+Made by Synked•Yesterday at 11:54 PM
+PHOENIX LOGS
+APP
+— Yesterday at 11:27 PM
+🚘 Showroom
+Jucător: Dragos (3) a achizitionat vehiculul: Truffade [Nero Supersport] pentru suma de 75.000.000$ !
+Made by Synked•Yesterday at 11:27 PM
+PHOENIX LOGS
+APP
+— Yesterday at 10:58 PM
+🚘 Showroom
+Jucător: Gussy (8675) a achizitionat vehiculul: ⭐ Thunderglide [Deluxe] pentru suma de 20$ !
+Made by Synked•Yesterday at 10:58 PM
+
+================================================================================
+RAW_LOG_ID: 8
+FILE: logs\telefon.txt
+--------------------------------------------------------------------------------
+PHOENIX LOGS
+APP
+— 12/19/2025 12:06 AM
+💵 Telefon
+Jucătorului: Mr.Edward(2113) i-au fost adaugati 25000 $
+Made by Synked•12/19/2025 12:06 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:06 AM
+💵 Telefon
+Jucătorului: Okin(4965) i-au fost luati 25000 $
+Made by Synked•12/19/2025 12:06 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:06 AM
+💵 Telefon
+Jucătorului: AlexandruCL(294) i-au fost adaugati 1000000 $
+Made by Synked•12/19/2025 12:06 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:06 AM
+💵 Telefon
+Jucătorului: 亗٭CARLA٭亗(8296) i-au fost luati 1000000 $
+Made by Synked•12/19/2025 12:06 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:09 AM
+💵 Telefon
+Jucătorului: AlexandruCL(294) i-au fost luati 500000 $
+Made by Synked•12/19/2025 12:09 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:09 AM
+💵 Telefon
+Jucătorului: Supereroul din Caracal(621) i-au fost adaugati 500000 $
+Made by Synked•12/19/2025 12:09 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:21 AM
+💵 Telefon
+Jucătorului: Okin(4965) i-au fost luati 12500 $
+Made by Synked•12/19/2025 12:21 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 12:21 AM
+💵 Telefon
+Jucătorului: Mr.Edward(2113) i-au fost adaugati 12500 $
+Made by Synked•12/19/2025 12:21 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 1:11 AM
+💵 Telefon
+Jucătorului: Grinch(17775) i-au fost adaugati 1000000 $
+Made by Synked•12/19/2025 1:11 AM
+PHOENIX LOGS
+APP
+— 12/19/2025 1:11 AM
+💵 Telefon
+Jucătorului: AlexandruCL(294) i-au fost luati 1000000 $
+Made by Synked•12/19/2025 1:11 AM
+
+================================================================================
+RAW_LOG_ID: 9
+FILE: logs\Test IMPORT.txt
+--------------------------------------------------------------------------------
+— 12/17/2025 4:59 PM
+[ID] 20748 [MOTIV]HACKER [BAN PERMANENT] [1/2]
+AlexandruCL
+— 12/17/2025 5:03 PM
+[ID] 17775 [MOTIV] Neprezentare dovezi [BAN PERMANENT] [1/2]
+HAZA  ♛  | 104
+— 12/17/2025 6:48 PM
+[ID] 20808, 20802, 20788, 20717, 9986 [MOTIV]HACKER + BAN EVADER [BAN PERMANENT] [FARA DREPT]
+Claudiu | 7648
+— 12/17/2025 8:06 PM
+[ID] 20501 [MOTIV]HACKER / ban evade [BAN PERMANENT] fara drept
+Robert
+— 12/17/2025 9:52 PM
+[ID] 20813 [MOTIV] troll  [BAN PERMANENT] [1/3]
+Silib0y
+— 12/17/2025 10:20 PM
+[ID] 20824 [MOTIV]  ban evade [BAN PERMANENT] fara drept
+Silib0y
+— 12/18/2025 12:12 AM
+[ID] 20833 [MOTIV] ban evade [BAN PERMANENT] fara drept
+Silib0y
+— 12/18/2025 12:42 AM
+[ID] 19193 [MOTIV] HACKER [BAN PERMANENT] [1/2]
+mateiu
+— 12/18/2025 10:38 AM
+[ID] 9498 [MOTIV] HACKER [BAN PERMANENT] [1/2]
+mateiu
+— 12/18/2025 12:16 PM
+[ID] 694(4375) [MOTIV] ban evade[BAN PERMANENT] fara drept  @klodu- | 787
+felixx 17967 — 12/18/2025 1:16 PM
+[ID] 20845 [MOTIV] troll  [BAN PERMANENT] [1/3]
+felixx 17967 — 12/18/2025 2:17 PM
+[ID] 20847[MOTIV] HACK [BAN PERMANENT] [1/2]
+mateiu
+— 12/18/2025 2:46 PM
+[ID] 5566 [MOTIV] HACK [BAN PERMANENT] [1/2]
+Smert "Sebastian" Nikolai 5934
+— 12/18/2025 5:05 PM
+[ID] 6030 [MOTIV] Incapabil de a se juca pe aceasta comunitate [BAN PERMANENT] fara drept @AlexandruCL
+Mussolinni | 18422
+— 12/18/2025 9:12 PM
+[ID] 20865 [MOTIV] HACK [BAN PERMANENT] [1/2]
+edy | 4331
+— 12/18/2025 9:29 PM
+[ID] 19086 [MOTIV] TOXICITATE [BAN PERMANENT] [1/3]
+klodu- | 787
+— 12/18/2025 9:37 PM
+[ID] 5929 [MOTIV] META-GAMING [BAN TEMPORAR] 5 zile [1/5]
+AlexandruCL
+— 12/18/2025 9:59 PM
+[ID] 3954 [MOTIV] HACK [BAN PERMANENT] [1/2]
+Kazi | 444
+— 12/18/2025 10:09 PM
+[ID] 20766 [MOTIV] HACK [BAN PERMANENT] [1/2]
+AlexandruCL
+— 12/18/2025 10:23 PM
+[ID] 19684 [MOTIV] Troll masiv [BAN TEMPORAR] 30d [1/5]
+dogyy
+— 12/18/2025 10:30 PM
+[ID] 68 [MOTIV] DC IN RP [BAN TEMP] 5 Zile [3/5]
+
+================================================================================
+RAW_LOG_ID: 10
+FILE: logs\transfer 19.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul BitteN__.[1712] a pus in portbagaj_1712_glendale item-ul Bani Murdari(x482.708).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul BitteN__.[1712] a scos din portbagaj_1712_glendale item-ul Metamfetamina(x17).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Mr.Edward[2113] a scos din portbagaj_2113_greenwood item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Mr.Edward[2113] a scos din portbagaj_2113_greenwood item-ul Gloante NAVYREVOLVER(x39).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul Mr.Edward[2113] a pus in portbagaj_2113_greenwood item-ul Gloante NAVYREVOLVER(x39).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Mr.Edward[2113] a scos din portbagaj_2113_greenwood item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Okin[4965] a scos din portbagaj_4965_club item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Mr.Edward[2113] a scos din portbagaj_2113_greenwood item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Mr.Edward[2113] a scos din portbagaj_2113_greenwood item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/19/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Okin[4965] a scos din portbagaj_4965_club item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 11
+FILE: logs\transfer 20.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul DenisZET[368] a pus in portbagaj_368_asbo item-ul TEC-9(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul DenisZET[368] a pus in portbagaj_368_asbo item-ul Kit Laborator(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul Gabriel[13311] a pus in portbagaj_13311_204sVettura item-ul Switchblade(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul Moga[83] a pus in portbagaj_83_club item-ul Satar(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[REMOVE] Jucatorul Moga[83] a scos din portbagaj_83_club item-ul Satar(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul Moga[83] a pus in portbagaj_83_club item-ul Knuckle Duster(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:01 AM
+Transfera Item
+[REMOVE] Jucatorul Marioo[6252] a scos din portbagaj_6252_drafter item-ul Jammer(x2).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:01 AM
+Transfera Item
+[REMOVE] Jucatorul Marioo[6252] a scos din portbagaj_6252_drafter item-ul Lockpick Incuietoare(x4).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:01 AM
+Transfera Item
+[REMOVE] Jucatorul Okin[4965] a scos din portbagaj_4965_glendale item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/20/2025 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Okin[4965] a pus in portbagaj_4965_glendale item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 12
+FILE: logs\transfer 21.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12/21/2025 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul davidd17[599] a pus in portbagaj_599_club item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul pc[9998] a pus in torpedou_9998_nero item-ul Bani Murdari(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul doina warrior[11091] a pus in portbagaj_11091_club item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul pc[9998] a pus in torpedou_9998_nero item-ul Bani Murdari(x192.979).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:01 AM
+Transfera Item
+[REMOVE] Jucatorul DenisZET[368] a scos din portbagaj_368_asbo item-ul Plic Iarba (Blue dream)(x21).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:02 AM
+Transfera Item
+[TRANSFER] Jucatorul 亗٭CARLA٭亗[8296] a pus in vinewood_mlo_20 item-ul Gloante NAVYREVOLVER(x200).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Daniel[20420] a scos din torpedou_20420_gbbisonstx item-ul Plic Iarba(x30).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Daniel[20420] a scos din torpedou_20420_gbbisonstx item-ul Plic Iarba (Blue dream)(x10).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul titi aur[678] a scos din retreiver-678 item-ul Etanol(x26).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12/21/2025 12:03 AM
+Transfera Item
+[TRANSFER] Jucatorul Stefann.[73] a pus in retreiver-73 item-ul Bani Murdari(x1.323.370).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 13
+FILE: logs\transfer 22.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— Yesterday at 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul ACiD[484] a pus in retreiver-484 item-ul Telefon(x1).
+Made by zJu1C3 with❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul ACiD[484] a pus in retreiver-484 item-ul Radio(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul ACiD[484] a pus in retreiver-484 item-ul Radio(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Diamant Roz(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Plic Iarba (OG Kush)(x10).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Bani Murdari(x22.599).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Lingou de Aur(x2).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul zuko1[240] a scos din portbagaj_240_ingot item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul ciorba[8511] a scos din portbagaj_8511_club item-ul Otel(x10).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Matei [10609] a scos din retreiver-10609 item-ul Navy Revolver(x1).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 14
+FILE: logs\transfer 23.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 12:00 AM
+Transfera Item
+[TRANSFER] Jucatorul Gussy[8675] a pus in torpedou_8675_fcr2 item-ul Bani Murdari(x143.742).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Gussy[8675] a pus in portbagaj_8675_bati2 item-ul TEC-9(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:01 AM
+Transfera Item
+[TRANSFER] Jucatorul Gussy[8675] a pus in portbagaj_8675_bati2 item-ul Bricheta(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Gussy[8675] a scos din portbagaj_8675_bati2 item-ul Plic Iarba (Blue dream)(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Gussy[8675] a scos din portbagaj_8675_bati2 item-ul Plic Iarba (Blue dream)(x54).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Sebi[16747] a scos din portbagaj_16747_gbvivantgrb item-ul Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:02 AM
+Transfera Item
+[REMOVE] Jucatorul Sebi[16747] a scos din portbagaj_16747_gbvivantgrb item-ul Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:02 AM
+Transfera Item
+[TRANSFER] Jucatorul Gussy[8675] a pus in torpedou_8675_templar item-ul Plic Iarba (Blue dream)(x36).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:04 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 12:04 AM
+Transfera Item
+[TRANSFER] Jucatorul Sebi[16747] a pus in portbagaj_16747_gbvivantgrb item-ul Inel de Argint cu Diamant(x1).
+Made by zJu1C3 with ❤️ & ☕
+
+================================================================================
+RAW_LOG_ID: 15
+FILE: logs\transfer bank.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 2:27 AM
+Transfer (Bancar)
+dragu[223] a transferat 6.000.000$ lui BitteN__.[1712].
+Ke[884] a transferat 500.000$ lui 🥽 VataRman[196].
+xtr![171] a transferat 15.000.000$ lui denis[415].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 11:34 PM
+Transfer (Bancar)
+ACiD[484] a transferat 150.000$ lui davidd17[599].
+Police[20026] a transferat 100.000$ lui davidd17[599].
+dragu[223] a transferat 5.200.000$ lui BitteN__.[1712].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 8:14 PM
+Transfer (Bancar)
+jean999🧊[158] a transferat 2.000.000$ lui Führer[1471].
+novy[5929] a transferat 19.000.000$ lui lucasef[4284].
+𝒃𝒓𝒂𝒔𝒊𝒍🌟[264] a transferat 10.000$ lui snivsy[254].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 6:27 PM
+Transfer (Bancar)
+andreibosu[447] a transferat 5.500.000$ lui Luksk[633].
+Cata[799] a transferat 800.000$ lui voke[17904].
+lucasef[4284] a transferat 19.000.000$ lui novy[5929].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 6:13 PM
+Transfer (Bancar)
+AlexandruCL[294] a transferat 1$ lui giuly[461].
+AlexandruCL[294] a transferat 1$ lui giuly[461].
+klodu-[787] a transferat 3.000.000$ lui Cata[799].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 6:08 PM
+Transfer (Bancar)
+Andrew[1028] a transferat 6.000.000$ lui karafa[3757].
+Robert[965] a transferat 3.000.000$ lui klodu-[787].
+Alberto[9568] a transferat 1.400.000$ lui Robert[965].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 5:45 PM
+Transfer (Bancar)
+Lucaa[226] a transferat 1.000.000$ lui SimtAgresiv[100].
+Alberto#GiveMeLove[10863] a transferat 500.000$ lui voke[17904].
+voke[17904] a transferat 250.000$ lui giuly[461].
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— Yesterday at 5:22 PM
+Transfer (Bancar)
+
+================================================================================
+RAW_LOG_ID: 16
+FILE: logs\Vinde Vehicul.txt
+--------------------------------------------------------------------------------
+PHOENIX LOGS
+APP
+— 12/18/2025 5:41 PM
+🚘 Showroom
+Jucător: Alberto a vandut vehiculul nerossmk2 lui [8296] 亗٭CARLA٭亗 pentru suma de 1$!
+Made by Synked•12/18/2025 5:41 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 6:06 PM
+🚘 Showroom
+Jucător: ciorba a vandut vehiculul gbvoyagerb2 lui [20314] Xinpou pentru suma de 41$!
+Made by Synked•12/18/2025 6:06 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 6:28 PM
+🚘 Showroom
+Jucător: Andrew a vandut vehiculul sanchez2 lui [1370] ianis0804 pentru suma de 400.000$!
+Made by Synked•12/18/2025 6:28 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 6:29 PM
+🚘 Showroom
+Jucător: Darius a vandut vehiculul youga3 lui [7662] Regele pentru suma de 1$!
+Made by Synked•12/18/2025 6:29 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 7:20 PM
+🚘 Showroom
+Jucător: FurnicaRemus a vandut vehiculul gbvivantgrb lui [16117] David Capsunica pentru suma de 1$!
+Made by Synked•12/18/2025 7:20 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 7:28 PM
+🚘 Showroom
+Jucător: ianis0804 a vandut vehiculul sanchez2 lui [16747] Sebi pentru suma de 700.000$!
+Made by Synked•12/18/2025 7:28 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 9:52 PM
+🚘 Showroom
+Jucător: pulia a vandut vehiculul lore_sl63 lui [18235] Mariposa pentru suma de 67$!
+Made by Synked•12/18/2025 9:52 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 11:08 PM
+🚘 Showroom
+Jucător: CaramiDa a vandut vehiculul impaler3 lui [368] DenisZET pentru suma de 1$!
+Made by Synked•12/18/2025 11:08 PM
+PHOENIX LOGS
+APP
+— 12/18/2025 11:31 PM
+🚘 Showroom
+Jucător: DenisZET a vandut vehiculul enduro lui [471] amadeusmoft pentru suma de 200.000$!
+Made by Synked•12/18/2025 11:31 PM
+PHOENIX LOGS
+APP
+— 12/19/2025 8:36 AM
+🚘 Showroom
+Jucător: wld a vandut vehiculul hellion lui [19896] kenzz pentru suma de 2.700.000$!
+Made by Synked•12/19/2025 8:36 AM
+
+================================================================================
+RAW_LOG_ID: 17
+FILE: logs\withdraw.txt
+--------------------------------------------------------------------------------
+Freaks Logs
+APP
+— 8:06 AM
+Retragere Banca
+Alberto[9568] a retras 4.900.000$.
+HovSep[13904] a retras 4.900.000$.
+Alberto[6844] a retras 9.800$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 7:26 AM
+Retragere Banca
+trixy[17432] a retras 4.900$.
+Vlad[6189] a retras 10.780$.
+HovSep[13904] a retras 49.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 4:42 AM
+Retragere Banca
+Alberto[9568] a retras 9.800.000$.
+trixy[17432] a retras 4.900$.
+trixy[17432] a retras 4.900$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 3:27 AM
+Retragere Banca
+xtr![171] a retras 2.940.000$.
+el Murio[3318] a retras 1.764.000$.
+trixy[17432] a retras 1.078$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 2:43 AM
+Retragere Banca
+deresee..[584] a retras 196.000$.
+trixy[17432] a retras 980$.
+xtr![171] a retras 9.800.000$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 2:41 AM
+Retragere Banca
+trixy[17432] a retras 4.900$.
+deresee..[584] a retras 9.800$.
+deresee..[584] a retras 9.800$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 2:22 AM
+Retragere Banca
+xtr![171] a retras 4.410.000$.
+xtr![171] a retras 9.800.000$.
+trixy[17432] a retras 58.800$.
+Made by zJu1C3 with ❤️ & ☕
+Freaks Logs
+APP
+— 1:35 AM
+Retragere Banca
+
+[raw_log_id=9] ts=2025-10-30T01:48:00Z ts_raw=polar — 10/30/2025 1:48 AM
+[ID] 749 [MOTIV] Arogante la ticket [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T01:48:00Z ts_raw=polar — 10/30/2025 1:48 AM
+dogyy
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T10:51:00Z ts_raw=— 10/30/2025 10:51 AM
+[ID] 17315 [MOTIV] Suferinte OOC [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T10:51:00Z ts_raw=— 10/30/2025 10:51 AM
+Grigo
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T21:12:00Z ts_raw=— 10/30/2025 9:12 PM
+[ID] 471 [MOTIV]  PG [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T21:12:00Z ts_raw=— 10/30/2025 9:12 PM
+klodu- | 787
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T21:54:00Z ts_raw=— 10/30/2025 9:54 PM
+[ID] 444 [MOTIV] NO-FEAR [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T21:54:00Z ts_raw=— 10/30/2025 9:54 PM
+[ID] 18209 [MOTIV] POWER-GAMING [3/3] - Resetare la 0/5
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T23:03:00Z ts_raw=BUCUR | 619 — 10/30/2025 11:03 PM
+[ID] 121 [MOTIV] Actiune ilegala in zona publica  [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T23:03:00Z ts_raw=BUCUR | 619 — 10/30/2025 11:03 PM
+david 6823🐆
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T23:30:00Z ts_raw=— 10/30/2025 11:30 PM
+[ID] 14517 [MOTIV] RDM [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-30T23:30:00Z ts_raw=— 10/30/2025 11:30 PM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-31T11:54:00Z ts_raw=— 10/31/2025 11:54 AM
+[ID] 13912 [MOTIV] PG [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-31T18:33:00Z ts_raw=acab — 10/31/2025 6:33 PM
+[ID] 447 [MOTIV] cop fear [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-10-31T18:33:00Z ts_raw=acab — 10/31/2025 6:33 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-01T14:09:00Z ts_raw=— 11/1/2025 2:09 PM
+[ID] 4331 [MOTIV] Toxicitate  [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-01T17:23:00Z ts_raw=acab — 11/1/2025 5:23 PM
+[ID] 160 [MOTIV] suferinte ooc [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-01T18:42:00Z ts_raw=acab — 11/1/2025 6:42 PM
+[ID] 9604 [MOTIV] COMPORTAMENT INADECVAT IMPOTRIVA FEMEILOR [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-01T18:42:00Z ts_raw=acab — 11/1/2025 6:42 PM
+Sarah ♛
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-02T17:12:00Z ts_raw=— 11/2/2025 5:12 PM
+[ID] 133 [MOTIV] page up in rp [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-02T17:12:00Z ts_raw=— 11/2/2025 5:12 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-03T19:26:00Z ts_raw=— 11/3/2025 7:26 PM
+[ID] 11091 [MOTIV] Cop fear [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-03T19:26:00Z ts_raw=— 11/3/2025 7:26 PM
+[ID] 196 [Motiv] pg [warn] [3/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-03T19:26:00Z ts_raw=— 11/3/2025 7:26 PM
+Sarah ♛
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-04T21:08:00Z ts_raw=— 11/4/2025 9:08 PM
+[ID] 10831 [MOTIV] actiune ilegala in zona publica [3/3] RESETARE WARNURI
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-05T11:32:00Z ts_raw=polar — 11/5/2025 11:32 AM
+ID] 12017 [MOTIV] refuz rp [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-05T17:10:00Z ts_raw=acab — 11/5/2025 5:10 PM
+ID] 5466 [MOTIV] suferinte ooc [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-05T17:10:00Z ts_raw=acab — 11/5/2025 5:10 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-07T14:43:00Z ts_raw=— 11/7/2025 2:43 PM
+[ID] 1100 [MOTIV] ACȚIUNE ILEGALĂ ÎN ZONA PUBLICĂ [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-07T14:43:00Z ts_raw=— 11/7/2025 2:43 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-07T18:05:00Z ts_raw=— 11/7/2025 6:05 PM
+[ID] 6657 [MOTIV] PG  [WARN] 2/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-07T18:05:00Z ts_raw=— 11/7/2025 6:05 PM
+david 6823🐆
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-15T22:55:00Z ts_raw=— 11/15/2025 10:55 PM
+[ID] 840 [MOTIV] Vorbit Mort [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-15T22:55:00Z ts_raw=— 11/15/2025 10:55 PM
+[ID] 154 [MOTIV] Vorbit Mort [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-15T22:55:00Z ts_raw=— 11/15/2025 10:55 PM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T13:41:00Z ts_raw=— 11/16/2025 1:41 PM
+[ID] 284 [MOTIV] bug abuse [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T13:41:00Z ts_raw=— 11/16/2025 1:41 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T14:31:00Z ts_raw=— 11/16/2025 2:31 PM
+[ID] 7781 [MOTIV] FAIL RP [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T14:31:00Z ts_raw=— 11/16/2025 2:31 PM
+Alexia | 15244
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T18:09:00Z ts_raw=— 11/16/2025 6:09 PM
+[ID] 207 [MOTIV] RDM [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-16T18:09:00Z ts_raw=— 11/16/2025 6:09 PM
+Alberto|9568
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T15:47:00Z ts_raw=— 11/17/2025 3:47 PM
+[ID] 19335 [MOTIV] PG  [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T15:47:00Z ts_raw=— 11/17/2025 3:47 PM
+Alberto|9568
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T19:42:00Z ts_raw=— 11/17/2025 7:42 PM
+[ID] 305 | [Motiv] Bug Abuse [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T19:42:00Z ts_raw=— 11/17/2025 7:42 PM
+Trabuc | 9752
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T20:02:00Z ts_raw=— 11/17/2025 8:02 PM
+[ID] 19141 | [MOTIV] MIXING [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-17T20:02:00Z ts_raw=— 11/17/2025 8:02 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-18T14:11:00Z ts_raw=— 11/18/2025 2:11 PM
+[ID] 19510| [MOTIV] CAR RAM [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-18T14:11:00Z ts_raw=— 11/18/2025 2:11 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-18T19:00:00Z ts_raw=— 11/18/2025 7:00 PM
+[ID] 19409 | [MOTIV] ESECUL DE A STA MINIM 14 ZILE INTR-O FACTIUNE [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-18T21:58:00Z ts_raw=BUCUR | 619 — 11/18/2025 9:58 PM
+[ID] 273 [Motiv] toxicitate minora [warn]  1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-18T21:58:00Z ts_raw=BUCUR | 619 — 11/18/2025 9:58 PM
+Alexia | 15244
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-19T18:33:00Z ts_raw=— 11/19/2025 6:33 PM
+[ID] 2733 [MOTIV] METAGAMING [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-19T18:33:00Z ts_raw=— 11/19/2025 6:33 PM
+SebyyG | 10203
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T14:17:00Z ts_raw=— 11/20/2025 2:17 PM
+[ID] 177 [MOTIV] POWERGAMING [WARN] 2/5
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T14:17:00Z ts_raw=— 11/20/2025 2:17 PM
+jean 158🧊
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T15:09:00Z ts_raw=— 11/20/2025 3:09 PM
+[ID] 1415 [MOTIV] cop-fear [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T15:09:00Z ts_raw=— 11/20/2025 3:09 PM
+Robert
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T18:32:00Z ts_raw=— 11/20/2025 6:32 PM
+[ID] 19339 | [MOTIV] coruptie [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-20T18:32:00Z ts_raw=— 11/20/2025 6:32 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T02:23:00Z ts_raw=— 11/23/2025 2:23 AM
+[ID] 305 | [Motiv] Bug Abuse [warn] 2/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T02:23:00Z ts_raw=— 11/23/2025 2:23 AM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T02:43:00Z ts_raw=— 11/23/2025 2:43 AM
+[ID] 1441 | [Motiv] PG [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T02:43:00Z ts_raw=— 11/23/2025 2:43 AM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T12:10:00Z ts_raw=— 11/23/2025 12:10 PM
+[ID] 14114 [MOTIV] ESECUL DE A STA MINIM 14 ZILE INTR-O FACTIUNE  [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T12:10:00Z ts_raw=— 11/23/2025 12:10 PM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T13:35:00Z ts_raw=— 11/23/2025 1:35 PM
+[ID] 1766 [Motiv] toxicitate minora [warn]  1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T13:35:00Z ts_raw=— 11/23/2025 1:35 PM
+klodu- | 787
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T20:32:00Z ts_raw=— 11/23/2025 8:32 PM
+[ID] 505 [MOTIV] MINCIUNI LA TICKET [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T20:32:00Z ts_raw=— 11/23/2025 8:32 PM
+[ID] 1052 [MOTIV] ACTIUNE ILEGALA IN ZONA PUBLICA [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-23T20:32:00Z ts_raw=— 11/23/2025 8:32 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-24T20:42:00Z ts_raw=— 11/24/2025 8:42 PM
+[ID] 7625| [Motiv] CORUPTIE [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-24T20:42:00Z ts_raw=— 11/24/2025 8:42 PM
+Dragos
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-25T22:00:00Z ts_raw=— 11/25/2025 10:00 PM
+[ID] 7618 [MOTIV] PG [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-25T22:00:00Z ts_raw=— 11/25/2025 10:00 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T20:25:00Z ts_raw=— 11/30/2025 8:25 PM
+[ID] 3497 [MOTIV] PG [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T20:54:00Z ts_raw=BUCUR | 619 — 11/30/2025 8:54 PM
+[ID] 3073 [MOTIV] PG-UP in roleplay [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T20:54:00Z ts_raw=BUCUR | 619 — 11/30/2025 8:54 PM
+Sili
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T23:30:00Z ts_raw=— 11/30/2025 11:30 PM
+[ID] 1649 [MOTIV] META-GAMING MINOR [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T23:30:00Z ts_raw=— 11/30/2025 11:30 PM
+[ID] 3890 [MOTIV] INJURII EXCESIVE] [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T23:30:00Z ts_raw=— 11/30/2025 11:30 PM
+[ID] 3913 [MOTIV] INJURII EXCESIVE] [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-11-30T23:30:00Z ts_raw=— 11/30/2025 11:30 PM
+Claudiu | 7648
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T14:09:00Z ts_raw=— 12/1/2025 2:09 PM
+[ID] 372 [MOTIV] [REFUZ RP] [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T14:09:00Z ts_raw=— 12/1/2025 2:09 PM
+Alberto|9568
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T18:34:00Z ts_raw=— 12/1/2025 6:34 PM
+[ID] 18209 [MOTIV] VDM [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T18:34:00Z ts_raw=— 12/1/2025 6:34 PM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T19:29:00Z ts_raw=— 12/1/2025 7:29 PM
+[ID] 7213 [MOTIV] CAR RAM [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-01T19:29:00Z ts_raw=— 12/1/2025 7:29 PM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-03T18:50:00Z ts_raw=— 12/3/2025 6:50 PM
+[ID] 959 [MOTIV] cop-fear [3/3] RESETARE WARN URI la [0/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-03T18:50:00Z ts_raw=— 12/3/2025 6:50 PM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-03T20:58:00Z ts_raw=— 12/3/2025 8:58 PM
+[ID] 16931 [MOTIV] PG [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-03T20:58:00Z ts_raw=— 12/3/2025 8:58 PM
+Sarah ♛
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T15:28:00Z ts_raw=— 12/5/2025 3:28 PM
+[ID] 505 [MOTIV] metagaming minor [WARN] [3/3]  RESETARE WARNURI
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T15:28:00Z ts_raw=— 12/5/2025 3:28 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T19:35:00Z ts_raw=— 12/5/2025 7:35 PM
+[ID] 5268 [MOTIV] Low Effort Rp [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T19:35:00Z ts_raw=— 12/5/2025 7:35 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T19:47:00Z ts_raw=— 12/5/2025 7:47 PM
+[ID] 924 [MOTIV] Actiune ilegala sub 25 de ore [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T19:47:00Z ts_raw=— 12/5/2025 7:47 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T23:43:00Z ts_raw=— 12/5/2025 11:43 PM
+[ID] 201 [MOTIV] Anulare Emote [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-05T23:43:00Z ts_raw=— 12/5/2025 11:43 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T15:24:00Z ts_raw=— 12/6/2025 3:24 PM
+[ID] 1084 [MOTIV] Coruptie  [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T15:24:00Z ts_raw=— 12/6/2025 3:24 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T15:40:00Z ts_raw=— 12/6/2025 3:40 PM
+[ID] 13745 [MOTIV] Coruptie  [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T15:40:00Z ts_raw=— 12/6/2025 3:40 PM
+Mussolinni | 18422
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T22:35:00Z ts_raw=— 12/6/2025 10:35 PM
+[ID] 1295 [MOTIV] Anulare animatie  [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-06T22:35:00Z ts_raw=— 12/6/2025 10:35 PM
+SebyyG | 10203
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-07T12:06:00Z ts_raw=— 12/7/2025 12:06 PM
+[ID] 959 [MOTIV] Deschidere ooc/cuvinte interzise  [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-07T12:06:00Z ts_raw=— 12/7/2025 12:06 PM
+Robert
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-07T13:57:00Z ts_raw=— 12/7/2025 1:57 PM
+[ID] 839 [Motiv] ilegalitate in zona publica [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-07T19:46:00Z ts_raw=MISY — 12/7/2025 7:46 PM
+[ID] 19341 [Motiv] Deschidere OOC[warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-07T19:46:00Z ts_raw=MISY — 12/7/2025 7:46 PM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-08T15:20:00Z ts_raw=— 12/8/2025 3:20 PM
+[ID] 6656 [Motiv] COP FEAR [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-08T15:20:00Z ts_raw=— 12/8/2025 3:20 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-08T17:22:00Z ts_raw=— 12/8/2025 5:22 PM
+[ID] 20311 [Motiv] CONDUS NON RP [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-08T17:22:00Z ts_raw=— 12/8/2025 5:22 PM
+Grigo
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T10:18:00Z ts_raw=— 12/9/2025 10:18 AM
+[ID] 19909 [Motiv] Power gaming [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T10:18:00Z ts_raw=— 12/9/2025 10:18 AM
+SebyyG | 10203
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T19:27:00Z ts_raw=— 12/9/2025 7:27 PM
+[ID] 68 [Motiv] suferinte ooc [warn] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T19:27:00Z ts_raw=— 12/9/2025 7:27 PM
+Sili
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T21:44:00Z ts_raw=— 12/9/2025 9:44 PM
+[ID] 4375 [MOTIV] PG [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-09T21:44:00Z ts_raw=— 12/9/2025 9:44 PM
+Alberto|9568
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-10T13:45:00Z ts_raw=— 12/10/2025 1:45 PM
+[ID] 19189 [MOTIV] PG [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-10T13:45:00Z ts_raw=— 12/10/2025 1:45 PM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-11T19:12:00Z ts_raw=— 12/11/2025 7:12 PM
+[ID] 499 [MOTIV] CF [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-11T19:12:00Z ts_raw=— 12/11/2025 7:12 PM
+Trabuc | 9752
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-11T21:31:00Z ts_raw=— 12/11/2025 9:31 PM
+[ID] 12264 [MOTIV] CAR RAM [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-11T21:31:00Z ts_raw=— 12/11/2025 9:31 PM
+Cutite | 327 🗽
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T00:01:00Z ts_raw=— 12/14/2025 12:01 AM
+[ID] 18209 [MOTIV] actiune ilegala in zp [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T00:01:00Z ts_raw=— 12/14/2025 12:01 AM
+SebyyG | 10203
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T14:22:00Z ts_raw=— 12/14/2025 2:22 PM
+[ID] 5466 [MOTIV] RDM [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T14:22:00Z ts_raw=— 12/14/2025 2:22 PM
+Mussolinni | 18422
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T14:24:00Z ts_raw=— 12/14/2025 2:24 PM
+[ID] 505 [MOTIV] COP-FEAR [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T14:24:00Z ts_raw=— 12/14/2025 2:24 PM
+jean 158🧊
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T15:24:00Z ts_raw=— 12/14/2025 3:24 PM
+[ID] 505 [MOTIV] SUFERINTE OOC [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T15:24:00Z ts_raw=— 12/14/2025 3:24 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T17:42:00Z ts_raw=— 12/14/2025 5:42 PM
+[ID] 284 [MOTIV] Bug Abuse/Resetare WARN [WARN] [3/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T17:42:00Z ts_raw=— 12/14/2025 5:42 PM
+[ID] 599 [MOTIV] Bug Low Effort [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T17:42:00Z ts_raw=— 12/14/2025 5:42 PM
+Mussolinni | 18422
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T18:01:00Z ts_raw=— 12/14/2025 6:01 PM
+[ID] 2069 [MOTIV] PG [WARN] 1/3
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T18:01:00Z ts_raw=— 12/14/2025 6:01 PM
+Mussolinni | 18422
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T21:35:00Z ts_raw=— 12/14/2025 9:35 PM
+[ID] 4777 [MOTIV] PG [WARN] 3/3 (reset la 0/3)
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-14T21:35:00Z ts_raw=— 12/14/2025 9:35 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T15:18:00Z ts_raw=— 12/15/2025 3:18 PM
+[ID] 461 [MOTIV]  Low Effort [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T15:18:00Z ts_raw=— 12/15/2025 3:18 PM
+Claudiu | 7648
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T21:57:00Z ts_raw=— 12/15/2025 9:57 PM
+[ID] 17904 [MOTIV] RDM [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T21:57:00Z ts_raw=— 12/15/2025 9:57 PM
+Sili
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T22:17:00Z ts_raw=— 12/15/2025 10:17 PM
+[ID] 17775 [MOTIV] CATUSE IN BATAIE (PG) [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T22:17:00Z ts_raw=— 12/15/2025 10:17 PM
+Alexia | 15244
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T22:56:00Z ts_raw=— 12/15/2025 10:56 PM
+[ID] 678  [MOTIV] Condus NON-RP [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-15T22:56:00Z ts_raw=— 12/15/2025 10:56 PM
+Jo | 69
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-16T15:46:00Z ts_raw=— 12/16/2025 3:46 PM
+[ID] 484 [MOTIV] PG + ACUMULARE WARN // RESET 0/3  [3/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-16T15:46:00Z ts_raw=— 12/16/2025 3:46 PM
+Smert "Sebastian" Nikolai 5934
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-16T16:39:00Z ts_raw=— 12/16/2025 4:39 PM
+[ID] 19339 [MOTV] Injurii minore [WARN] [2/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-16T16:39:00Z ts_raw=— 12/16/2025 4:39 PM
+edy | 4331
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T16:59:00Z ts_raw=— 12/17/2025 4:59 PM
+AlexandruCL
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T17:03:00Z ts_raw=— 12/17/2025 5:03 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T18:48:00Z ts_raw=— 12/17/2025 6:48 PM
+Claudiu | 7648
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T20:06:00Z ts_raw=— 12/17/2025 8:06 PM
+Robert
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T21:52:00Z ts_raw=— 12/17/2025 9:52 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-17T22:20:00Z ts_raw=— 12/17/2025 10:20 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T00:12:00Z ts_raw=— 12/18/2025 12:12 AM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T00:42:00Z ts_raw=— 12/18/2025 12:42 AM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T10:38:00Z ts_raw=— 12/18/2025 10:38 AM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T14:17:00Z ts_raw=felixx 17967 — 12/18/2025 2:17 PM
+mateiu
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T14:46:00Z ts_raw=— 12/18/2025 2:46 PM
+Smert "Sebastian" Nikolai 5934
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T17:05:00Z ts_raw=— 12/18/2025 5:05 PM
+Mussolinni | 18422
+------------------------------------------------------------
+[raw_log_id=3] ts=2025-12-18T20:32:00Z ts_raw=— 12/18/2025 8:32 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T21:12:00Z ts_raw=— 12/18/2025 9:12 PM
+edy | 4331
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T21:29:00Z ts_raw=— 12/18/2025 9:29 PM
+klodu- | 787
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T21:37:00Z ts_raw=— 12/18/2025 9:37 PM
+AlexandruCL
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T21:59:00Z ts_raw=— 12/18/2025 9:59 PM
+Kazi | 444
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T22:09:00Z ts_raw=— 12/18/2025 10:09 PM
+AlexandruCL
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T22:23:00Z ts_raw=— 12/18/2025 10:23 PM
+dogyy
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T22:30:00Z ts_raw=— 12/18/2025 10:30 PM
+dogyy
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T22:30:00Z ts_raw=— 12/18/2025 10:30 PM
+[ID] 452 [MOTIV]] PG [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T22:30:00Z ts_raw=— 12/18/2025 10:30 PM
+Edyy | 7781
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T23:12:00Z ts_raw=— 12/18/2025 11:12 PM
+[ID] 330 [MOTIV]] Cop-Fear [WARN] [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-18T23:12:00Z ts_raw=— 12/18/2025 11:12 PM
+Edyy | 7781
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T11:14:00Z ts_raw=— 12/19/2025 11:14 AM
+Alexia | 15244
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T14:50:00Z ts_raw=felixx 17967 — 12/19/2025 2:50 PM
+Trabuc | 9752
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T16:11:00Z ts_raw=— 12/19/2025 4:11 PM
+Trabuc | 9752
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T17:38:00Z ts_raw=felixx 17967 — 12/19/2025 5:38 PM
+teoo | 84
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T18:09:00Z ts_raw=— 12/19/2025 6:09 PM
+!.Mario | 387
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T18:26:00Z ts_raw=— 12/19/2025 6:26 PM
+Alexia | 15244
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T21:41:00Z ts_raw=— 12/19/2025 9:41 PM
+[ID] 9188 [MOTIV] POWER-GAMING [1/3]
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T21:41:00Z ts_raw=— 12/19/2025 9:41 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-19T23:08:00Z ts_raw=derese | 584 — 12/19/2025 11:08 PM
+jean 158🧊
+------------------------------------------------------------
+[raw_log_id=4] ts=2025-12-20T01:26:00Z ts_raw=— 12/20/2025 1:26 AM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=4] ts=2025-12-20T15:27:00Z ts_raw=— 12/20/2025 3:27 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=4] ts=2025-12-20T16:11:00Z ts_raw=— 12/20/2025 4:11 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=5] ts=2025-12-21T18:17:00Z ts_raw=— 12/21/2025 6:17 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=5] ts=2025-12-21T18:35:00Z ts_raw=— 12/21/2025 6:35 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=5] ts=2025-12-23T10:47:00Z ts_raw=— Yesterday at 10:47 AM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=5] ts=2025-12-23T11:48:00Z ts_raw=— Yesterday at 11:48 AM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=5] ts=2025-12-23T14:08:00Z ts_raw=— Yesterday at 2:08 PM
+reaks Logs
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T18:10:00Z ts_raw=— Yesterday at 6:10 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T18:24:00Z ts_raw=— Yesterday at 6:24 PM
+!.Mario | 387
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T19:04:00Z ts_raw=— Yesterday at 7:04 PM
+edy | 4331
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T19:30:00Z ts_raw=— Yesterday at 7:30 PM
+Edyy | 7781
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T19:48:00Z ts_raw=— Yesterday at 7:48 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T20:39:00Z ts_raw=— Yesterday at 8:39 PM
+edy | 4331
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T20:50:00Z ts_raw=— Yesterday at 8:50 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T20:52:00Z ts_raw=— Yesterday at 8:52 PM
+edy | 4331
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T20:54:00Z ts_raw=— Yesterday at 8:54 PM
+teoo | 84
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T22:08:00Z ts_raw=— Yesterday at 10:08 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T22:23:00Z ts_raw=— Yesterday at 10:23 PM
+HAZA  ♛  | 104
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T23:25:00Z ts_raw=— Yesterday at 11:25 PM
+Robert
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-23T23:59:00Z ts_raw=derese | 584 — Yesterday at 11:59 PM
+Robert
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T00:47:00Z ts_raw=— 12:47 AM
+teoo | 84
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T01:25:00Z ts_raw=— 1:25 AM
+klodu- | 787
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T01:33:00Z ts_raw=— 1:33 AM
+!.Mario | 387
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T10:37:00Z ts_raw=— 10:37 AM
+VataRman | 196
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T14:25:00Z ts_raw=— 2:25 PM
+jean 158🧊
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T15:28:00Z ts_raw=— 3:28 PM
+SebyyG | 10203
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T15:28:00Z ts_raw=— 3:28 PM
+AmigO
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T16:28:00Z ts_raw=— 4:28 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T20:00:00Z ts_raw=— 8:00 PM
+Silib0y
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T20:34:00Z ts_raw=— 8:34 PM
+Claudiu | 7648
+------------------------------------------------------------
+[raw_log_id=9] ts=2025-12-24T21:52:00Z ts_raw=— 9:52 PM
+klodu- | 787
+------------------------------------------------------------
