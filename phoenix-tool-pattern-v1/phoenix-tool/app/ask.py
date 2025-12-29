@@ -261,6 +261,75 @@ def _render_exchange_candidates(pid: str, ts_from: str | None, ts_to: str | None
     console.print("\n[dim]Note: options are grouped evidence only. No 1-to-1 trade pairing is forced.[/dim]")
 
 
+def _exchange_candidates_data(pid: str, ts_from: str | None, ts_to: str | None) -> dict:
+    out_types = ["ofera_item", "ofera_bani", "phone_remove", "bank_transfer"]
+    in_types = ["ofera_item", "ofera_bani", "phone_add", "bank_transfer"]
+
+    out_rows = _query_directional(pid, "out", out_types, ts_from, ts_to, limit=800)
+    in_rows = _query_directional(pid, "in", in_types, ts_from, ts_to, limit=800)
+
+    buckets: dict[str, dict] = {}
+
+    def _bp(partner_id: str, partner_name: str | None):
+        b = buckets.setdefault(
+            partner_id,
+            {
+                "partner_name": partner_name or "",
+                "out": [],
+                "in": [],
+                "out_money": 0,
+                "in_money": 0,
+            },
+        )
+        if partner_name and not b["partner_name"]:
+            b["partner_name"] = partner_name
+        return b
+
+    for r in out_rows:
+        partner_id = str(r.dst_id or "")
+        if not partner_id:
+            continue
+        b = _bp(partner_id, r.dst_name)
+        b["out"].append(r)
+        if r.money:
+            b["out_money"] += int(r.money)
+
+    for r in in_rows:
+        partner_id = str(r.src_id or "")
+        if not partner_id:
+            continue
+        b = _bp(partner_id, r.src_name)
+        b["in"].append(r)
+        if r.money:
+            b["in_money"] += int(r.money)
+
+    candidates = []
+    for pid2, b in buckets.items():
+        if b["out"] and b["in"]:
+            candidates.append((pid2, b))
+
+    candidates.sort(key=lambda x: (len(x[1]["out"]) + len(x[1]["in"])), reverse=True)
+    top = []
+    for pid2, b in candidates[:8]:
+        top.append(
+            {
+                "partner_id": pid2,
+                "partner_name": b.get("partner_name") or "",
+                "out": b["out"],
+                "in": b["in"],
+                "out_money": b["out_money"],
+                "in_money": b["in_money"],
+            }
+        )
+
+    return {
+        "pid": pid,
+        "ts_from": ts_from,
+        "ts_to": ts_to,
+        "candidates": top,
+    }
+
+
 def _render_timeline(pid: str, ts_from: str | None, ts_to: str | None):
     rows = search_events(ids=[pid], ts_from=ts_from, ts_to=ts_to, limit=500)
     title = f"Timeline for ID {pid}"
@@ -278,6 +347,17 @@ def _render_timeline(pid: str, ts_from: str | None, ts_to: str | None):
         lines.append("- … (trimmed) …")
         lines.append("- Tip: use search with a narrower time range for full output")
     console.print("\n".join(lines))
+
+
+def _timeline_data(pid: str, ts_from: str | None, ts_to: str | None) -> dict:
+    rows = search_events(ids=[pid], ts_from=ts_from, ts_to=ts_to, limit=500)
+    return {
+        "pid": pid,
+        "ts_from": ts_from,
+        "ts_to": ts_to,
+        "events": rows,
+        "trimmed": len(rows) > 200,
+    }
 
 
 def _render_partners(pid: str, ts_from: str | None, ts_to: str | None):
@@ -309,6 +389,115 @@ def _render_partners(pid: str, ts_from: str | None, ts_to: str | None):
         pid2 = pid2 or ""
         pname = pname or ""
         console.print(f"{i:>2}. {pname}[{pid2}] — {count}")
+
+
+def _partners_data(pid: str, ts_from: str | None, ts_to: str | None) -> dict:
+    rows = search_events(ids=[pid], ts_from=ts_from, ts_to=ts_to, limit=2000)
+    counts = {}
+    for ev in rows:
+        if ev.src_id == pid and ev.dst_id:
+            key = (ev.dst_id, ev.dst_name)
+        elif ev.dst_id == pid and ev.src_id:
+            key = (ev.src_id, ev.src_name)
+        else:
+            continue
+        counts[key] = counts.get(key, 0) + 1
+
+    top_partners = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:25]
+    partners = []
+    for partner, count in top_partners:
+        pid2, pname = partner
+        partners.append(
+            {
+                "partner_id": pid2,
+                "partner_name": pname,
+                "count": count,
+            }
+        )
+    return {
+        "pid": pid,
+        "ts_from": ts_from,
+        "ts_to": ts_to,
+        "partners": partners,
+    }
+
+
+def ask_data(question: str) -> dict:
+    intent = _classify_intent(question)
+    if not intent.pid:
+        return {
+            "ok": False,
+            "error": "missing_id",
+            "message": "I couldn't find an ID in your question. Include an ID number (e.g. 161).",
+        }
+
+    payload = {
+        "ok": True,
+        "intent": intent.kind,
+        "pid": intent.pid,
+        "pid2": intent.pid2,
+        "item": intent.item,
+        "ts_from": intent.ts_from,
+        "ts_to": intent.ts_to,
+    }
+
+    if intent.kind == "report":
+        case_dir, events, identities = build_case_file(intent.pid)
+        payload["data"] = {"case_dir": str(case_dir), "events": events, "identities": identities}
+        return payload
+
+    if intent.kind == "summary":
+        summary = summary_for_id(intent.pid)
+        payload["data"] = summary
+        return payload
+
+    if intent.kind == "partners":
+        payload["data"] = _partners_data(intent.pid, intent.ts_from, intent.ts_to)
+        return payload
+
+    if intent.kind == "timeline":
+        payload["data"] = _timeline_data(intent.pid, intent.ts_from, intent.ts_to)
+        return payload
+
+    if intent.kind == "trace":
+        events, nodes = trace(intent.pid, depth=2, item_filter=None)
+        payload["data"] = {"events": events, "nodes": nodes}
+        return payload
+
+    if intent.kind == "item_story":
+        chains = build_flow(intent.pid, direction="both", depth=2, window_minutes=180, item_filter=intent.item)
+        payload["data"] = {"chains": chains, "direction": "both"}
+        return payload
+
+    if intent.kind == "banking":
+        rows = search_events(ids=[intent.pid], event_type=None, ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
+        rows2 = [r for r in rows if (r.event_type or "") in {"bank_transfer", "bank_deposit", "bank_withdraw", "phone_add", "phone_remove", "ofera_bani"}]
+        payload["data"] = {"events": rows2}
+        return payload
+
+    if intent.kind == "vehicles":
+        rows = search_events(ids=[intent.pid], ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
+        rows2 = [r for r in rows if (r.event_type or "").startswith("vehicle_")]
+        payload["data"] = {"events": rows2}
+        return payload
+
+    if intent.kind == "dropped":
+        rows = search_events(ids=[intent.pid], event_type="drop_item", ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
+        payload["data"] = {"events": rows}
+        return payload
+
+    if intent.kind == "telefon":
+        rows = search_events(ids=[intent.pid], ts_from=intent.ts_from, ts_to=intent.ts_to, limit=500)
+        rows2 = [r for r in rows if (r.event_type or "") in {"phone_add", "phone_remove"}]
+        payload["data"] = {"events": rows2, "note": "Pairing is not forced in ASK mode yet. Use normal views to investigate matches."}
+        return payload
+
+    if intent.kind == "exchange":
+        payload["data"] = _exchange_candidates_data(intent.pid, intent.ts_from, intent.ts_to)
+        return payload
+
+    payload["data"] = _timeline_data(intent.pid, intent.ts_from, intent.ts_to)
+    return payload
 
 
 def ask_dispatch(question: str):

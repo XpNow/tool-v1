@@ -371,3 +371,79 @@ def fetch_raw_log_sources() -> dict[int, str]:
     rows = cur.execute("SELECT id, source_file FROM raw_logs").fetchall()
     conn.close()
     return {r["id"]: r["source_file"] for r in rows}
+
+
+def fetch_event_counts() -> dict:
+    conn = get_db()
+    cur = conn.cursor()
+
+    raw_n = cur.execute("SELECT COUNT(*) c FROM raw_logs").fetchone()["c"]
+    norm_n = cur.execute("SELECT COUNT(*) c FROM normalized_lines").fetchone()["c"]
+    ev_n = cur.execute("SELECT COUNT(*) c FROM events").fetchone()["c"]
+
+    by_type_rows = cur.execute(
+        """
+        SELECT event_type, COUNT(*) c
+        FROM events
+        GROUP BY event_type
+        ORDER BY c DESC
+        """
+    ).fetchall()
+    conn.close()
+    return {
+        "raw_logs": int(raw_n),
+        "normalized_lines": int(norm_n),
+        "events": int(ev_n),
+        "events_by_type": [{"event_type": r["event_type"], "count": int(r["c"])} for r in by_type_rows],
+    }
+
+
+def fetch_recent_entities(limit: int = 10) -> list[dict]:
+    conn = get_db()
+    cur = conn.cursor()
+    rows = cur.execute(
+        """
+        SELECT src_id as player_id, src_name as name, MAX(ts) as last_seen
+        FROM events
+        WHERE src_id IS NOT NULL
+        GROUP BY src_id, src_name
+        ORDER BY last_seen DESC
+        LIMIT ?
+        """,
+        (int(limit),),
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "player_id": r["player_id"],
+            "name": r["name"],
+            "last_seen": r["last_seen"],
+        }
+        for r in rows
+    ]
+
+
+def search_entities(query: str, limit: int = 20) -> list[dict]:
+    conn = get_db()
+    cur = conn.cursor()
+    q = f"%{query}%"
+    rows = cur.execute(
+        """
+        SELECT src_id as player_id, src_name as name, MAX(ts) as last_seen
+        FROM events
+        WHERE src_id LIKE ? OR src_name LIKE ?
+        GROUP BY src_id, src_name
+        ORDER BY last_seen DESC
+        LIMIT ?
+        """,
+        (q, q, int(limit)),
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "player_id": r["player_id"],
+            "name": r["name"],
+            "last_seen": r["last_seen"],
+        }
+        for r in rows
+    ]

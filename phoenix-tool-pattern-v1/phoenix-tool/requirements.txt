@@ -2,3 +2,5 @@ pyyaml
 rich
 python-dateutil
 pytest
+fastapi
+uvicorn

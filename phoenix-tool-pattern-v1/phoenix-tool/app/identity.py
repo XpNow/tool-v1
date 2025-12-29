@@ -6,7 +6,7 @@ from .db import get_db
 console = Console(force_terminal=True)
 
 
-def rebuild_identities():
+def rebuild_identities(silent: bool = False):
     """
     Stage 4: Identity resolution is OBSERVED, not assumed.
     Rebuild deterministically from parsed events (not raw logs).
@@ -77,11 +77,12 @@ def rebuild_identities():
 
     conn.commit()
     conn.close()
-    console.print(Panel(f"Identity rows inserted: {inserted}", title="IDENTITY REBUILD"))
+    if not silent:
+        console.print(Panel(f"Identity rows inserted: {inserted}", title="IDENTITY REBUILD"))
     return inserted
 
 
-def show_identity(query: str):
+def show_identity(query: str, as_data: bool = False):
     conn = get_db()
     cur = conn.cursor()
 
@@ -105,6 +106,17 @@ def show_identity(query: str):
         title = f"Query '{query}'"
 
     conn.close()
+
+    if as_data:
+        return [
+            {
+                "player_id": r["player_id"],
+                "name": r["name"],
+                "ip": r["ip"],
+                "sightings": int(r["sightings"] or 0),
+            }
+            for r in rows
+        ]
 
     t = Table(title=f"IDENTITY — {title}", show_lines=True)
     t.add_column("Player ID")

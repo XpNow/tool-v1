@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from pathlib import Path
 
@@ -5,7 +6,8 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-DB_PATH = DATA_DIR / "phoenix.db"
+_ENV_DB = os.environ.get("PHOENIX_DB")
+DB_PATH = Path(_ENV_DB).expanduser().resolve() if _ENV_DB else DATA_DIR / "phoenix.db"
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
