@@ -15,6 +15,14 @@ class WarningItem:
     items: list | None = None
 
 
+@dataclass(frozen=True)
+class ErrorItem:
+    code: str
+    message: str
+    hint: str
+    details: str | None = None
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -25,6 +33,7 @@ def build_response(
     data: Any,
     warnings: list[WarningItem] | None = None,
     ok: bool = True,
+    error: ErrorItem | None = None,
 ) -> dict[str, Any]:
     return {
         "ok": ok,
@@ -32,6 +41,7 @@ def build_response(
         "params": params,
         "warnings": [w.__dict__ for w in warnings or []],
         "data": data,
+        "error": error.__dict__ if error else None,
         "meta": {
             "version": "1.0",
             "db_path": str(get_db_path()),
@@ -42,4 +52,5 @@ def build_response(
 
 def build_error(command: str, params: dict[str, Any], message: str) -> dict[str, Any]:
     warn = WarningItem(code="ERROR", message=message, count=1)
-    return build_response(command, params, data=None, warnings=[warn], ok=False)
+    err = ErrorItem(code="INTERNAL", message=message, hint="Check logs or retry.", details=None)
+    return build_response(command, params, data=None, warnings=[warn], ok=False, error=err)
