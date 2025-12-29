@@ -259,4 +259,19 @@ def render_flow(start_id: str, chains, direction: str):
         out.append(f"{loc}")
         out.append("")
 
-    console.print(Panel("\n".join(out).rstrip(), title=title))
+    from datetime import datetime
+    import os
+
+    os.makedirs(os.path.join("output", "flow"), exist_ok=True)
+    stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    out_path = os.path.join("output", "flow", f"flow_{start_id}_{direction}_{stamp}.txt")
+    full_text = "\n".join(out).rstrip() + "\n"
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(full_text)
+
+    preview_lines = out[:200]
+    if len(out) > 200:
+        preview_lines.append("… (trimmed) …")
+    preview_lines.append(f"Full flow saved to: {out_path}")
+
+    console.print(Panel("\n".join(preview_lines).rstrip(), title=title))

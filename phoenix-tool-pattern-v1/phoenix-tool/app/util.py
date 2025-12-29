@@ -54,24 +54,36 @@ def sha1_text(s: str) -> str:
 # Normalizers (parsing)
 # -------------------------
 
+def parse_int_ro(value_str: str | None) -> int | None:
+    """
+    Parse a Romanian-formatted integer string.
+
+    Handles:
+      - dots/commas/space separators: 13.000.000 / 13,000,000 / 13 000 000
+      - prefixes/suffixes like x482.708, (x7.825)
+      - unicode spaces
+    Returns None if no digits are present.
+    """
+    if value_str is None:
+        return None
+    s = str(value_str).strip()
+    if not s:
+        return None
+    s = s.replace("$", "")
+    digits = re.sub(r"[^\d]", "", s)
+    return int(digits) if digits else None
+
+
 def normalize_money(s: str) -> int:
-    s = (s or "").replace("$", "").replace(" ", "")
-    s = s.replace(".", "").replace(",", "").strip()
-    return int(s) if s.isdigit() else 0
+    value = parse_int_ro(s)
+    return int(value or 0)
 
 
 def normalize_qty(s: str):
     """
     Normalize quantity strings into an integer (or None if unknown).
-
-    Accepts formats like:
-      - "10.000.000", "10,000,000", "10 000 000"
-      - "x10.000.000", "(x10.000.000)", "10.000.000x"
-    Returns None if no digits are present.
     """
-    s = (s or "")
-    digits = re.sub(r"\D+", "", s)
-    return int(digits) if digits else None
+    return parse_int_ro(s)
 
 # -------------------------
 # Display formatting (output only)
@@ -185,6 +197,20 @@ def render_event_line(ev: dict) -> str:
     if src:
         return f"{prefix}{src} ({et})".strip()
     return f"{prefix}{et}".strip()
+
+
+def build_warning_lines(
+    relative_count: int = 0,
+    unknown_qty_count: int = 0,
+    unknown_container_count: int = 0,
+    negative_storage_count: int = 0,
+) -> list[str]:
+    return [
+        f"RELATIVE timestamps: {relative_count}",
+        f"UNKNOWN qty: {unknown_qty_count}",
+        f"UNKNOWN container: {unknown_container_count}",
+        f"negative storage likely missing history: {negative_storage_count}",
+    ]
 
 
 def last_known_location_from_chain(chain: list[dict], direction: str) -> str:

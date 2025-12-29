@@ -154,13 +154,21 @@ def parse_events():
     cur.execute("DELETE FROM events")
 
     rows = cur.execute("""
-        SELECT raw_log_id, line_no, ts, ts_raw, text
-        FROM normalized_lines
+        SELECT
+            nl.raw_log_id,
+            nl.line_no,
+            nl.ts,
+            nl.ts_raw,
+            nl.timestamp_quality,
+            nl.text,
+            rl.source_file
+        FROM normalized_lines nl
+        JOIN raw_logs rl ON rl.id = nl.raw_log_id
         ORDER BY
-            CASE WHEN ts IS NULL THEN 1 ELSE 0 END,
-            ts ASC,
-            raw_log_id ASC,
-            line_no ASC
+            CASE WHEN nl.ts IS NULL THEN 1 ELSE 0 END,
+            nl.ts ASC,
+            nl.raw_log_id ASC,
+            nl.line_no ASC
     """).fetchall()
 
     inserted = 0
@@ -168,8 +176,11 @@ def parse_events():
 
     for r in rows:
         raw_id = r["raw_log_id"]
+        line_no = r["line_no"]
         ts = r["ts"]
         ts_raw = r["ts_raw"]
+        ts_quality = r["timestamp_quality"]
+        source_file = r["source_file"]
         line = (r["text"] or "").strip()
 
         if not line:
@@ -179,14 +190,18 @@ def parse_events():
         m = RE_BANK_TRANSFER.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,dst_id,dst_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,dst_id,dst_name,
+                    money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "bank_transfer",
+                ts, ts_raw, ts_quality, "bank_transfer",
                 m.group("src_id"), (m.group("src_name") or "").strip(),
                 m.group("dst_id"), (m.group("dst_name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -195,13 +210,16 @@ def parse_events():
         m = RE_BANK_DEPOSIT.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,dst_id,dst_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    dst_id,dst_name,money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "bank_deposit",
+                ts, ts_raw, ts_quality, "bank_deposit",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -209,13 +227,16 @@ def parse_events():
         m = RE_BANK_WITHDRAW.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "bank_withdraw",
+                ts, ts_raw, ts_quality, "bank_withdraw",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -224,15 +245,19 @@ def parse_events():
         m = RE_OFERA_ITEM.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,dst_id,dst_name,item,qty,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,dst_id,dst_name,
+                    item,qty,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "ofera_item",
+                ts, ts_raw, ts_quality, "ofera_item",
                 m.group("src_id"), (m.group("src_name") or "").strip(),
                 m.group("dst_id"), (m.group("dst_name") or "").strip(),
                 (m.group("item") or "").strip(),
                 normalize_qty(m.group("qty")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -240,14 +265,18 @@ def parse_events():
         m = RE_OFERA_BANI.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,dst_id,dst_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,dst_id,dst_name,
+                    money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "ofera_bani",
+                ts, ts_raw, ts_quality, "ofera_bani",
                 m.group("src_id"), (m.group("src_name") or "").strip(),
                 m.group("dst_id"), (m.group("dst_name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -256,13 +285,16 @@ def parse_events():
         m = RE_PHONE_ADD.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "phone_add",
+                ts, ts_raw, ts_quality, "phone_add",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -270,13 +302,16 @@ def parse_events():
         m = RE_PHONE_REMOVE.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,money,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,money,raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "phone_remove",
+                ts, ts_raw, ts_quality, "phone_remove",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -285,14 +320,18 @@ def parse_events():
         m = RE_DROP_ITEM.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,item,qty,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,item,qty,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "drop_item",
+                ts, ts_raw, ts_quality, "drop_item",
                 m.group("id"), (m.group("name") or "").strip(),
                 (m.group("item") or "").strip(),
                 normalize_qty(m.group("qty")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -300,15 +339,19 @@ def parse_events():
         m = RE_CONTAINER_PUT.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,item,qty,container,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,item,qty,container,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "container_put",
+                ts, ts_raw, ts_quality, "container_put",
                 m.group("id"), (m.group("name") or "").strip(),
                 (m.group("item") or "").strip(),
                 normalize_qty(m.group("qty")),
                 (m.group("container") or "").strip(),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -316,15 +359,19 @@ def parse_events():
         m = RE_CONTAINER_REMOVE.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,item,qty,container,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,item,qty,container,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "container_remove",
+                ts, ts_raw, ts_quality, "container_remove",
                 m.group("id"), (m.group("name") or "").strip(),
                 (m.group("item") or "").strip(),
                 normalize_qty(m.group("qty")),
                 (m.group("container") or "").strip(),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -333,15 +380,19 @@ def parse_events():
         m = RE_PERCHEZITIE.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,src_id,src_name,dst_id,item,qty,raw_log_id)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    src_id,src_name,dst_id,item,qty,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "perchezitie_remove",
+                ts, ts_raw, ts_quality, "perchezitie_remove",
                 m.group("src_id"), (m.group("src_name") or "").strip(),
                 m.group("dst_id"),
                 (m.group("item") or "").strip(),
                 normalize_qty(m.group("qty")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -353,19 +404,19 @@ def parse_events():
         if m:
             cur.execute("""
                 INSERT INTO events(
-                    ts, ts_raw, event_type,
+                    ts, ts_raw, timestamp_quality, event_type,
                     src_id, src_name,
                     money, item, container,
-                    raw_log_id
+                    raw_log_id, line_no, source_file
                 )
-                VALUES (?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "vehicle_sell_remat",
+                ts, ts_raw, ts_quality, "vehicle_sell_remat",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
                 f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
                 (m.group("garage") or "").strip(),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -375,18 +426,18 @@ def parse_events():
         if m:
             cur.execute("""
                 INSERT INTO events(
-                    ts, ts_raw, event_type,
+                    ts, ts_raw, timestamp_quality, event_type,
                     dst_id, dst_name,
                     money, item,
-                    raw_log_id
+                    raw_log_id, line_no, source_file
                 )
-                VALUES (?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "vehicle_buy_showroom",
+                ts, ts_raw, ts_quality, "vehicle_buy_showroom",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
                 f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -397,20 +448,20 @@ def parse_events():
         if m:
             cur.execute("""
                 INSERT INTO events(
-                    ts, ts_raw, event_type,
+                    ts, ts_raw, timestamp_quality, event_type,
                     src_id, src_name,
                     dst_id, dst_name,
                     money, item,
-                    raw_log_id
+                    raw_log_id, line_no, source_file
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "vehicle_sell_to_player",
+                ts, ts_raw, ts_quality, "vehicle_sell_to_player",
                 None, (m.group("src_name") or "").strip(),
                 m.group("dst_id"), (m.group("dst_name") or "").strip(),
                 normalize_money(m.group("amount")),
                 (m.group("veh_code") or "").strip(),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -421,12 +472,16 @@ def parse_events():
         if m:
             ip = (m.group("ip") or "").strip().replace("**", "")
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,dst_id,dst_name,container,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    dst_id,dst_name,container,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "connect",
+                ts, ts_raw, ts_quality, "connect",
                 m.group("id"), (m.group("name") or "").strip(),
-                ip, raw_id
+                ip, raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -436,12 +491,16 @@ def parse_events():
             ip_raw = (m.group("ip") or "").strip().replace("**", "")
             ip = None if ip_raw.lower() in ("nil", "") else ip_raw
             cur.execute("""
-                INSERT INTO events(ts,ts_raw,event_type,dst_id,dst_name,container,raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts,ts_raw,timestamp_quality,event_type,
+                    dst_id,dst_name,container,
+                    raw_log_id,line_no,source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "disconnect",
+                ts, ts_raw, ts_quality, "disconnect",
                 m.group("id"), (m.group("name") or "").strip(),
-                ip, raw_id
+                ip, raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -450,13 +509,17 @@ def parse_events():
         m = RE_DEPOSIT.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts, ts_raw, event_type, dst_id, dst_name, money, raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts, ts_raw, timestamp_quality, event_type,
+                    dst_id, dst_name, money,
+                    raw_log_id, line_no, source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "bank_deposit",
+                ts, ts_raw, ts_quality, "bank_deposit",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
@@ -464,13 +527,17 @@ def parse_events():
         m = RE_WITHDRAW.search(line)
         if m:
             cur.execute("""
-                INSERT INTO events(ts, ts_raw, event_type, src_id, src_name, money, raw_log_id)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO events(
+                    ts, ts_raw, timestamp_quality, event_type,
+                    src_id, src_name, money,
+                    raw_log_id, line_no, source_file
+                )
+                VALUES (?,?,?,?,?,?,?,?,?,?)
             """, (
-                ts, ts_raw, "bank_withdraw",
+                ts, ts_raw, ts_quality, "bank_withdraw",
                 m.group("id"), (m.group("name") or "").strip(),
                 normalize_money(m.group("amount")),
-                raw_id
+                raw_id, line_no, source_file
             ))
             inserted += 1
             continue
