@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from rich.console import Console
 from rich.panel import Panel
 
-from .search import search_events
+from .repository import search_events
 from .report import build_case_file
 from .flow import build_flow
 from .trace import trace

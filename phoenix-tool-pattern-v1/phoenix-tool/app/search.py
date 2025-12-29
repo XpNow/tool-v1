@@ -4,7 +4,7 @@ from .repository import search_events as repo_search_events
 from .repository import count_search_events as repo_count_search_events
 
 
-def _build_search_query(
+def search_events(
     ids=None,
     between_ids=None,
     name=None,

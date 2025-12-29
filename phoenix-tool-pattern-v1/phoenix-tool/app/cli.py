@@ -7,7 +7,7 @@ from .ingest import load_logs
 from .normalize import normalize_all
 from .parse import parse_events
 from .identity import rebuild_identities, show_identity
-from .search import search_events, count_search_events
+from .repository import search_events, count_search_events
 from .trace import trace
 from .flow import build_flow
 from .summary import summary_for_id
