@@ -31,6 +31,105 @@ class AskIntent:
 _RE_ID = re.compile(r"\b(\d{1,7})\b")
 _RE_ITEM_Q = re.compile(r"\"([^\"]+)\"")
 
+_ASK_EVENT_KEYWORDS = {
+    "bank transfer": "bank_transfer",
+    "bank deposit": "bank_deposit",
+    "bank withdraw": "bank_withdraw",
+    "phone add": "phone_add",
+    "phone remove": "phone_remove",
+    "drop item": "drop_item",
+}
+
+
+def _extract_keyword_value(q: str, keyword: str) -> str | None:
+    pattern = rf"\b{re.escape(keyword)}\s*[:=]\s*(\"([^\"]+)\"|(\S+))"
+    match = re.search(pattern, q, re.I)
+    if not match:
+        return None
+    return (match.group(2) or match.group(3) or "").strip() or None
+
+
+def _coerce_int(value: str | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def parse_ask_search(question: str) -> dict:
+    qn = " ".join((question or "").strip().split())
+    ql = qn.lower()
+    ids = _RE_ID.findall(qn)
+    ids = [pid for i, pid in enumerate(ids) if pid not in ids[:i]]
+
+    between_ids = None
+    if "between" in ql and len(ids) >= 2:
+        between_ids = ids[:2]
+        ids = []
+
+    item = _extract_keyword_value(qn, "item")
+    name = _extract_keyword_value(qn, "name")
+    event_type = (
+        _extract_keyword_value(qn, "event_type")
+        or _extract_keyword_value(qn, "event")
+        or _extract_keyword_value(qn, "type")
+    )
+    if not event_type:
+        for phrase, mapped in _ASK_EVENT_KEYWORDS.items():
+            if phrase in ql:
+                event_type = mapped
+                break
+
+    min_money = _coerce_int(_extract_keyword_value(qn, "min"))
+    max_money = _coerce_int(_extract_keyword_value(qn, "max"))
+    ts_from, ts_to = _extract_time_range(qn)
+
+    params: dict[str, object] = {}
+    if ids:
+        params["ids"] = ids
+    if between_ids:
+        params["between_ids"] = between_ids
+    if item:
+        params["item"] = item
+    if name:
+        params["name"] = name
+    if event_type:
+        params["event_type"] = event_type
+    if min_money is not None:
+        params["min_money"] = min_money
+    if max_money is not None:
+        params["max_money"] = max_money
+    if ts_from:
+        params["ts_from"] = ts_from
+    if ts_to:
+        params["ts_to"] = ts_to
+
+    if not params:
+        return {
+            "ok": False,
+            "message": "I couldn't parse a usable search query from that question.",
+            "examples": [
+                "123 bank transfer from 2024-01-01 to 2024-01-31",
+                "id:123 type:drop_item",
+                "between 123 and 456 type:phone_add",
+                "item:\"Rare Watch\" 321",
+            ],
+        }
+
+    pid = None
+    if between_ids:
+        pid = between_ids[0]
+    elif ids:
+        pid = ids[0]
+
+    return {
+        "ok": True,
+        "pid": pid,
+        "params": params,
+    }
+
 
 def _parse_user_dt(s: str) -> str | None:
     """Parse user datetime into ISO UTC Z (matches normalize.ts storage).

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any
 
-from app.ask import ask_data
+from app.ask import parse_ask_search
 from app.flow import build_flow
 from app.normalize import normalize_all
 from app.parse import parse_events
@@ -200,7 +200,18 @@ def audit() -> dict[str, Any]:
 
 
 def ask(question: str) -> dict[str, Any]:
-    return to_dict(ask_data(question))
+    parsed = parse_ask_search(question)
+    if not parsed.get("ok"):
+        return parsed
+    params = parsed["params"]
+    data = search(params)
+    return {
+        "ok": True,
+        "intent": "search",
+        "pid": parsed.get("pid"),
+        "params": params,
+        "data": data,
+    }
 
 
 def status() -> dict[str, Any]:
