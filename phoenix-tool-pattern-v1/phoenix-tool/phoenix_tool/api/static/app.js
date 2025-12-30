@@ -228,12 +228,12 @@ function renderSearchView() {
 }
 
 async function runSearch(offset) {
-  renderLoading("Running search…");
   const params = Object.keys(state.searchParams).length ? { ...state.searchParams } : {};
   const freshParams = collectFields();
   if (Object.keys(freshParams).length) {
     Object.assign(params, freshParams);
   }
+  renderLoading("Running search…");
   const limit = Number(params.limit || 200);
   state.searchParams = { ...params, limit: String(limit), offset: String(offset) };
   const query = new URLSearchParams({ ...params, limit, offset }).toString();
@@ -317,10 +317,6 @@ async function runSearch(offset) {
 function renderSummaryView() {
   viewTitle.textContent = "Summary";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Summary",
     `
@@ -329,8 +325,12 @@ function renderSummaryView() {
   );
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Building summary…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
+    renderLoading("Building summary…");
     const data = await fetchJson(`/summary?entity=${encodeURIComponent(params.entity || "")}`);
     state.lastResponse = data;
     if (!data.ok) {
@@ -391,10 +391,6 @@ function renderSummaryView() {
 function renderStoragesView() {
   viewTitle.textContent = "Storages";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Storage filters",
     `
@@ -408,8 +404,12 @@ function renderStoragesView() {
   );
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Loading containers…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
+    renderLoading("Loading containers…");
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/storages?${query}`);
     state.lastResponse = data;
@@ -476,10 +476,6 @@ function renderStoragesView() {
 function renderFlowView() {
   viewTitle.textContent = "Flow";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Flow settings",
     `
@@ -498,8 +494,12 @@ function renderFlowView() {
   );
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Tracing flow…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
+    renderLoading("Tracing flow…");
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/flow?${query}`);
     state.lastResponse = data;
@@ -558,8 +558,8 @@ function renderTraceView() {
   );
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Tracing graph…");
     const params = collectFields();
+    renderLoading("Tracing graph…");
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/trace?${query}`);
     state.lastResponse = data;
@@ -620,8 +620,8 @@ function renderBetweenView() {
   );
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Finding connections…");
     const params = collectFields();
+    renderLoading("Finding connections…");
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/between?${query}`);
     state.lastResponse = data;
@@ -676,12 +676,12 @@ function renderAskView(question = "") {
   `;
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
-    renderLoading("Analyzing…");
     const params = collectFields();
     if (!params.question) {
       renderEmpty("No question submitted.", "Ask Phoenix using the global bar or type a question below.");
       return;
     }
+    renderLoading("Analyzing…");
     const data = await fetchJson(`/ask?q=${encodeURIComponent(params.question || "")}`);
     state.lastResponse = data;
     if (!data.ok) {
