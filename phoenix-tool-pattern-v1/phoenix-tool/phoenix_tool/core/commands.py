@@ -76,17 +76,37 @@ def search(params: dict[str, Any]) -> dict[str, Any]:
     warnings = warnings_from_lines(count_warnings(rows))
     collapse = params.get("collapse")
     evidence = collapse_events(rows, collapse)
-    returned_count = len(evidence)
+    events = to_dict(evidence)
+    normalized_events = []
+    for row in events:
+        if isinstance(row, dict):
+            normalized_events.append(
+                {
+                    **row,
+                    "ts": row.get("ts"),
+                    "event_type": row.get("event_type"),
+                    "src_id": row.get("src_id"),
+                    "dst_id": row.get("dst_id"),
+                    "item": row.get("item"),
+                    "qty": row.get("qty"),
+                    "money": row.get("money"),
+                }
+            )
+        else:
+            normalized_events.append(row)
+    returned_count = len(normalized_events)
     limit = params.get("limit", 500)
     offset = params.get("offset", 0)
-    next_offset = offset + returned_count if returned_count == limit else None
+    next_offset = offset + limit if offset + limit < matched else None
+    prev_offset = max(offset - limit, 0) if offset > 0 else None
     return {
-        "events": to_dict(evidence),
+        "events": normalized_events,
         "matched_total": matched,
         "returned_count": returned_count,
         "limit": limit,
         "offset": offset,
         "next_offset": next_offset,
+        "prev_offset": prev_offset,
         "warnings": warnings,
     }
 
