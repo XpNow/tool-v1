@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from rich.console import Console
 from rich.panel import Panel
-from .db import get_db
+from .db import get_conn
 
 console = Console()
 
@@ -192,84 +192,83 @@ def _parse_marker(ts_raw: str, base_date: datetime | None) -> tuple[str | None, 
     return None, "UNKNOWN"
 
 
-def normalize_all():
-    conn = get_db()
-    cur = conn.cursor()
+def normalize_all(silent: bool = False):
+    with get_conn() as conn:
+        cur = conn.cursor()
 
-    # rebuild deterministically
-    cur.execute("DELETE FROM normalized_lines")
+        # rebuild deterministically
+        cur.execute("DELETE FROM normalized_lines")
 
-    # Support older DBs where raw_logs may not have loaded_at yet
-    cols = {row[1] for row in cur.execute("PRAGMA table_info(raw_logs)").fetchall()}
-    has_loaded_at = "loaded_at" in cols
+        # Support older DBs where raw_logs may not have loaded_at yet
+        cols = {row[1] for row in cur.execute("PRAGMA table_info(raw_logs)").fetchall()}
+        has_loaded_at = "loaded_at" in cols
 
-    if has_loaded_at:
-        raws = cur.execute(
-            "SELECT id, source_file, loaded_at, content FROM raw_logs ORDER BY id ASC"
-        ).fetchall()
-    else:
-        raws = cur.execute(
-            "SELECT id, source_file, content FROM raw_logs ORDER BY id ASC"
-        ).fetchall()
+        if has_loaded_at:
+            raws = cur.execute(
+                "SELECT id, source_file, loaded_at, content FROM raw_logs ORDER BY id ASC"
+            ).fetchall()
+        else:
+            raws = cur.execute(
+                "SELECT id, source_file, content FROM raw_logs ORDER BY id ASC"
+            ).fetchall()
 
-    inserted = 0
+        inserted = 0
 
-    for r in raws:
-        raw_id = r["id"]
-        source_file = r["source_file"]
-        # base date priority: explicit filename date -> None
-        base_dt = _base_date_from_filename(source_file)
+        for r in raws:
+            raw_id = r["id"]
+            source_file = r["source_file"]
+            # base date priority: explicit filename date -> None
+            base_dt = _base_date_from_filename(source_file)
 
-        last_ts_raw = None
-        last_ts_iso = None
-        last_ts_quality = "UNKNOWN"
+            last_ts_raw = None
+            last_ts_iso = None
+            last_ts_quality = "UNKNOWN"
 
-        # normalized sequence line number (1..N per raw_log)
-        norm_no = 0
+            # normalized sequence line number (1..N per raw_log)
+            norm_no = 0
 
-        for _raw_ln_no, line in enumerate(r["content"].splitlines(), 1):
-            s = line.strip()
+            for _raw_ln_no, line in enumerate(r["content"].splitlines(), 1):
+                s = line.strip()
 
-            if set(s) <= {"="} and len(s) >= 10:
-                continue
+                if set(s) <= {"="} and len(s) >= 10:
+                    continue
 
-            if s.startswith("RAW_LOG_ID:") or s.startswith("FILE:"):
-                continue
+                if s.startswith("RAW_LOG_ID:") or s.startswith("FILE:"):
+                    continue
 
+                if not s:
+                    continue
 
-            if not s:
-                continue
+                # noise removal
+                if s in NOISE_EXACT:
+                    continue
+                if any(s.startswith(p) for p in NOISE_PREFIXES):
+                    continue
 
-            # noise removal
-            if s in NOISE_EXACT:
-                continue
-            if any(s.startswith(p) for p in NOISE_PREFIXES):
-                continue
+                # timestamp marker line updates context, not inserted
+                if "—" in s and (
+                    RE_REL_TS.search(s)
+                    or RE_REL_24H.search(s)
+                    or RE_ABS_TS_DMY.search(s)
+                    or RE_ABS_TS_YMD.search(s)
+                    or RE_ABS_TS_MDY12.search(s)
+                ):
+                    last_ts_raw = s
+                    last_ts_iso, last_ts_quality = _parse_marker(s, base_dt)  # may be None; ts_raw still kept
+                    continue
 
-            # timestamp marker line updates context, not inserted
-            if "—" in s and (
-                RE_REL_TS.search(s)
-                or RE_REL_24H.search(s)
-                or RE_ABS_TS_DMY.search(s)
-                or RE_ABS_TS_YMD.search(s)
-                or RE_ABS_TS_MDY12.search(s)
-            ):
-                last_ts_raw = s
-                last_ts_iso, last_ts_quality = _parse_marker(s, base_dt)  # may be None; ts_raw still kept
-                continue
+                # insert meaningful normalized line
+                norm_no += 1
+                cur.execute(
+                    """
+                    INSERT INTO normalized_lines(raw_log_id, line_no, ts, ts_raw, timestamp_quality, text)
+                    VALUES (?,?,?,?,?,?)
+                    """,
+                    (raw_id, norm_no, last_ts_iso, last_ts_raw, last_ts_quality, s),
+                )
+                inserted += 1
 
-            # insert meaningful normalized line
-            norm_no += 1
-            cur.execute(
-                """
-                INSERT INTO normalized_lines(raw_log_id, line_no, ts, ts_raw, timestamp_quality, text)
-                VALUES (?,?,?,?,?,?)
-                """,
-                (raw_id, norm_no, last_ts_iso, last_ts_raw, last_ts_quality, s),
-            )
-            inserted += 1
-
-    conn.commit()
-    conn.close()
-    console.print(Panel(f"Normalized lines inserted: {inserted}", title="NORMALIZE"))
+        conn.commit()
+    if not silent:
+        console.print(Panel(f"Normalized lines inserted: {inserted}", title="NORMALIZE"))
     return inserted

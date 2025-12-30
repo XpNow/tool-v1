@@ -12,11 +12,12 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "output"
 EXPORT_DIR = OUTPUT_DIR / "exports"
 
-def export_tag(tag: str, fmt: str = "txt"):
+def export_tag(tag: str, fmt: str = "txt", silent: bool = False):
     EXPORT_DIR.mkdir(parents=True, exist_ok=True)
     rec = load_payload(tag)
     if not rec:
-        console.print(f"[red]No saved tag:[/red] {tag}")
+        if not silent:
+            console.print(f"[red]No saved tag:[/red] {tag}")
         return
 
     payload = json.loads(rec["payload"])
@@ -26,22 +27,26 @@ def export_tag(tag: str, fmt: str = "txt"):
     if fmt == "json":
         p = out_base.with_suffix(".json")
         p.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        console.print(Panel(str(p), title="EXPORTED JSON"))
+        if not silent:
+            console.print(Panel(str(p), title="EXPORTED JSON"))
         return
 
     if fmt == "txt":
         p = out_base.with_suffix(".txt")
         p.write_text(_payload_to_txt(rec, payload), encoding="utf-8")
-        console.print(Panel(str(p), title="EXPORTED TXT"))
+        if not silent:
+            console.print(Panel(str(p), title="EXPORTED TXT"))
         return
 
     if fmt == "html":
         p = out_base.with_suffix(".html")
         p.write_text(_payload_to_html(rec, payload), encoding="utf-8")
-        console.print(Panel(str(p), title="EXPORTED HTML"))
+        if not silent:
+            console.print(Panel(str(p), title="EXPORTED HTML"))
         return
 
-    console.print("[red]Unknown format[/red] Use: txt|html|json")
+    if not silent:
+        console.print("[red]Unknown format[/red] Use: txt|html|json")
 
 def _payload_to_txt(rec, payload):
     lines = []

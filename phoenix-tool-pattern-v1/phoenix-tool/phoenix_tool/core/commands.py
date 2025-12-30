@@ -24,17 +24,17 @@ from .warnings import warnings_from_lines
 
 
 def ingest(path: str) -> dict[str, Any]:
-    loaded = load_logs(path)
+    loaded = load_logs(path, silent=True)
     return {"loaded": loaded, "path": path}
 
 
 def normalize() -> dict[str, Any]:
-    normalized = normalize_all()
+    normalized = normalize_all(silent=True)
     return {"normalized": normalized}
 
 
 def parse() -> dict[str, Any]:
-    parsed = parse_events()
+    parsed = parse_events(silent=True)
     return {"parsed": parsed}
 
 
@@ -180,7 +180,7 @@ def status() -> dict[str, Any]:
 
 
 def hub() -> dict[str, Any]:
-    out = build_hub()
+    out = build_hub(silent=True)
     return {"path": str(out)}
 
 

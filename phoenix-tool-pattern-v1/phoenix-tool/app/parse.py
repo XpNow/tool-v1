@@ -3,7 +3,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 
-from .db import get_db
+from .db import get_conn
 from .util import normalize_money, normalize_qty
 
 console = Console()
@@ -147,410 +147,572 @@ def _audit_unparsed(raw_log_id: int, ts: str | None, ts_raw: str | None, text: s
 # Parser
 # -------------------------
 
-def parse_events():
-    conn = get_db()
-    cur = conn.cursor()
+def parse_events(silent: bool = False):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM events")
 
-    cur.execute("DELETE FROM events")
+        rows = cur.execute(
+            """
+            SELECT
+                nl.raw_log_id,
+                nl.line_no,
+                nl.ts,
+                nl.ts_raw,
+                nl.timestamp_quality,
+                nl.text,
+                rl.source_file
+            FROM normalized_lines nl
+            JOIN raw_logs rl ON rl.id = nl.raw_log_id
+            ORDER BY
+                CASE WHEN nl.ts IS NULL THEN 1 ELSE 0 END,
+                nl.ts ASC,
+                nl.raw_log_id ASC,
+                nl.line_no ASC
+            """
+        ).fetchall()
 
-    rows = cur.execute("""
-        SELECT
-            nl.raw_log_id,
-            nl.line_no,
-            nl.ts,
-            nl.ts_raw,
-            nl.timestamp_quality,
-            nl.text,
-            rl.source_file
-        FROM normalized_lines nl
-        JOIN raw_logs rl ON rl.id = nl.raw_log_id
-        ORDER BY
-            CASE WHEN nl.ts IS NULL THEN 1 ELSE 0 END,
-            nl.ts ASC,
-            nl.raw_log_id ASC,
-            nl.line_no ASC
-    """).fetchall()
+        inserted = 0
+        unparsed = 0
 
-    inserted = 0
-    unparsed = 0
+        for r in rows:
+            raw_id = r["raw_log_id"]
+            line_no = r["line_no"]
+            ts = r["ts"]
+            ts_raw = r["ts_raw"]
+            ts_quality = r["timestamp_quality"]
+            source_file = r["source_file"]
+            line = (r["text"] or "").strip()
 
-    for r in rows:
-        raw_id = r["raw_log_id"]
-        line_no = r["line_no"]
-        ts = r["ts"]
-        ts_raw = r["ts_raw"]
-        ts_quality = r["timestamp_quality"]
-        source_file = r["source_file"]
-        line = (r["text"] or "").strip()
+            if not line:
+                continue
 
-        if not line:
-            continue
-
-        # --- Transfers ---
-        m = RE_BANK_TRANSFER.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,dst_id,dst_name,
-                    money,raw_log_id,line_no,source_file
+            # --- Transfers ---
+            m = RE_BANK_TRANSFER.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,dst_id,dst_name,
+                        money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "bank_transfer",
+                        m.group("src_id"),
+                        (m.group("src_name") or "").strip(),
+                        m.group("dst_id"),
+                        (m.group("dst_name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "bank_transfer",
-                m.group("src_id"), (m.group("src_name") or "").strip(),
-                m.group("dst_id"), (m.group("dst_name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Deposits / Withdraws ---
-        m = RE_BANK_DEPOSIT.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    dst_id,dst_name,money,raw_log_id,line_no,source_file
+            # --- Deposits / Withdraws ---
+            m = RE_BANK_DEPOSIT.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        dst_id,dst_name,money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "bank_deposit",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "bank_deposit",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_BANK_WITHDRAW.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,money,raw_log_id,line_no,source_file
+            m = RE_BANK_WITHDRAW.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "bank_withdraw",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "bank_withdraw",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Ofera ---
-        m = RE_OFERA_ITEM.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,dst_id,dst_name,
-                    item,qty,raw_log_id,line_no,source_file
+            # --- Ofera ---
+            m = RE_OFERA_ITEM.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,dst_id,dst_name,
+                        item,qty,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "ofera_item",
+                        m.group("src_id"),
+                        (m.group("src_name") or "").strip(),
+                        m.group("dst_id"),
+                        (m.group("dst_name") or "").strip(),
+                        (m.group("item") or "").strip(),
+                        normalize_qty(m.group("qty")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "ofera_item",
-                m.group("src_id"), (m.group("src_name") or "").strip(),
-                m.group("dst_id"), (m.group("dst_name") or "").strip(),
-                (m.group("item") or "").strip(),
-                normalize_qty(m.group("qty")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_OFERA_BANI.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,dst_id,dst_name,
-                    money,raw_log_id,line_no,source_file
+            m = RE_OFERA_BANI.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,dst_id,dst_name,
+                        money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "ofera_bani",
+                        m.group("src_id"),
+                        (m.group("src_name") or "").strip(),
+                        m.group("dst_id"),
+                        (m.group("dst_name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "ofera_bani",
-                m.group("src_id"), (m.group("src_name") or "").strip(),
-                m.group("dst_id"), (m.group("dst_name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Phone ---
-        m = RE_PHONE_ADD.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,money,raw_log_id,line_no,source_file
+            # --- Phone ---
+            m = RE_PHONE_ADD.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "phone_add",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "phone_add",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_PHONE_REMOVE.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,money,raw_log_id,line_no,source_file
+            m = RE_PHONE_REMOVE.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,money,raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "phone_remove",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "phone_remove",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Items ---
-        m = RE_DROP_ITEM.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,item,qty,
-                    raw_log_id,line_no,source_file
+            # --- Items ---
+            m = RE_DROP_ITEM.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,item,qty,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "drop_item",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        (m.group("item") or "").strip(),
+                        normalize_qty(m.group("qty")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "drop_item",
-                m.group("id"), (m.group("name") or "").strip(),
-                (m.group("item") or "").strip(),
-                normalize_qty(m.group("qty")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_CONTAINER_PUT.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,item,qty,container,
-                    raw_log_id,line_no,source_file
+            m = RE_CONTAINER_PUT.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,item,qty,container,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "container_put",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        (m.group("item") or "").strip(),
+                        normalize_qty(m.group("qty")),
+                        (m.group("container") or "").strip(),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "container_put",
-                m.group("id"), (m.group("name") or "").strip(),
-                (m.group("item") or "").strip(),
-                normalize_qty(m.group("qty")),
-                (m.group("container") or "").strip(),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_CONTAINER_REMOVE.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,item,qty,container,
-                    raw_log_id,line_no,source_file
+            m = RE_CONTAINER_REMOVE.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,item,qty,container,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "container_remove",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        (m.group("item") or "").strip(),
+                        normalize_qty(m.group("qty")),
+                        (m.group("container") or "").strip(),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "container_remove",
-                m.group("id"), (m.group("name") or "").strip(),
-                (m.group("item") or "").strip(),
-                normalize_qty(m.group("qty")),
-                (m.group("container") or "").strip(),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Perchezitie (robbery/search) ---
-        m = RE_PERCHEZITIE.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    src_id,src_name,dst_id,item,qty,
-                    raw_log_id,line_no,source_file
+            # --- Perchezitie (robbery/search) ---
+            m = RE_PERCHEZITIE.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        src_id,src_name,dst_id,item,qty,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "perchezitie_remove",
+                        m.group("src_id"),
+                        (m.group("src_name") or "").strip(),
+                        m.group("dst_id"),
+                        (m.group("item") or "").strip(),
+                        normalize_qty(m.group("qty")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "perchezitie_remove",
-                m.group("src_id"), (m.group("src_name") or "").strip(),
-                m.group("dst_id"),
-                (m.group("item") or "").strip(),
-                normalize_qty(m.group("qty")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-                # --- Vehicles ---
-
-        # Remat: "Jucător: Name (16747) a vandut vehiculul Truffade Nero Custom [nero2] pentru suma de 4.875.000$ | GARAGE: Public"
-        m = RE_VEHICLE_SELL_REMAT.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts, ts_raw, timestamp_quality, event_type,
-                    src_id, src_name,
-                    money, item, container,
-                    raw_log_id, line_no, source_file
+            # --- Vehicles ---
+            m = RE_VEHICLE_SELL_REMAT.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts, ts_raw, timestamp_quality, event_type,
+                        src_id, src_name,
+                        money, item, container,
+                        raw_log_id, line_no, source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "vehicle_sell_remat",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
+                        (m.group("garage") or "").strip(),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "vehicle_sell_remat",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
-                (m.group("garage") or "").strip(),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # Showroom buy: "Jucător: Alberto (9568) a achizitionat vehiculul: Emperor [Ronin] pentru suma de 7.250.000$ !"
-        m = RE_VEHICLE_BUY_SHOWROOM.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts, ts_raw, timestamp_quality, event_type,
-                    dst_id, dst_name,
-                    money, item,
-                    raw_log_id, line_no, source_file
+            m = RE_VEHICLE_BUY_SHOWROOM.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts, ts_raw, timestamp_quality, event_type,
+                        dst_id, dst_name,
+                        money, item,
+                        raw_log_id, line_no, source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "vehicle_buy_showroom",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "vehicle_buy_showroom",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                f"{(m.group('veh') or '').strip()} [{(m.group('veh_code') or '').strip()}]",
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # Player-to-player sell: "Jucător: Alberto a vandut vehiculul nerossmk2 lui [8296] NAME pentru suma de 1$!"
-        # NOTE: src_id is not present in text, so we store src_id=NULL and keep src_name.
-        m = RE_VEHICLE_SELL_TO_PLAYER.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts, ts_raw, timestamp_quality, event_type,
-                    src_id, src_name,
-                    dst_id, dst_name,
-                    money, item,
-                    raw_log_id, line_no, source_file
+            m = RE_VEHICLE_SELL_TO_PLAYER.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts, ts_raw, timestamp_quality, event_type,
+                        src_id, src_name,
+                        dst_id, dst_name,
+                        money, item,
+                        raw_log_id, line_no, source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "vehicle_sell_to_player",
+                        None,
+                        (m.group("src_name") or "").strip(),
+                        m.group("dst_id"),
+                        (m.group("dst_name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        (m.group("veh_code") or "").strip(),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "vehicle_sell_to_player",
-                None, (m.group("src_name") or "").strip(),
-                m.group("dst_id"), (m.group("dst_name") or "").strip(),
-                normalize_money(m.group("amount")),
-                (m.group("veh_code") or "").strip(),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-
-        # --- Connect / disconnect ---
-        m = RE_CONNECT.search(line)
-        if m:
-            ip = (m.group("ip") or "").strip().replace("**", "")
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    dst_id,dst_name,container,
-                    raw_log_id,line_no,source_file
+            # --- Connect / disconnect ---
+            m = RE_CONNECT.search(line)
+            if m:
+                ip = (m.group("ip") or "").strip().replace("**", "")
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        dst_id,dst_name,container,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "connect",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        ip,
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "connect",
-                m.group("id"), (m.group("name") or "").strip(),
-                ip, raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_DISCONNECT.search(line)
-        if m:
-            ip_raw = (m.group("ip") or "").strip().replace("**", "")
-            ip = None if ip_raw.lower() in ("nil", "") else ip_raw
-            cur.execute("""
-                INSERT INTO events(
-                    ts,ts_raw,timestamp_quality,event_type,
-                    dst_id,dst_name,container,
-                    raw_log_id,line_no,source_file
+            m = RE_DISCONNECT.search(line)
+            if m:
+                ip_raw = (m.group("ip") or "").strip().replace("**", "")
+                ip = None if ip_raw.lower() in ("nil", "") else ip_raw
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts,ts_raw,timestamp_quality,event_type,
+                        dst_id,dst_name,container,
+                        raw_log_id,line_no,source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "disconnect",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        ip,
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "disconnect",
-                m.group("id"), (m.group("name") or "").strip(),
-                ip, raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-
-        m = RE_DEPOSIT.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts, ts_raw, timestamp_quality, event_type,
-                    dst_id, dst_name, money,
-                    raw_log_id, line_no, source_file
+            m = RE_DEPOSIT.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts, ts_raw, timestamp_quality, event_type,
+                        dst_id, dst_name, money,
+                        raw_log_id, line_no, source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "bank_deposit",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "bank_deposit",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        m = RE_WITHDRAW.search(line)
-        if m:
-            cur.execute("""
-                INSERT INTO events(
-                    ts, ts_raw, timestamp_quality, event_type,
-                    src_id, src_name, money,
-                    raw_log_id, line_no, source_file
+            m = RE_WITHDRAW.search(line)
+            if m:
+                cur.execute(
+                    """
+                    INSERT INTO events(
+                        ts, ts_raw, timestamp_quality, event_type,
+                        src_id, src_name, money,
+                        raw_log_id, line_no, source_file
+                    )
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ts,
+                        ts_raw,
+                        ts_quality,
+                        "bank_withdraw",
+                        m.group("id"),
+                        (m.group("name") or "").strip(),
+                        normalize_money(m.group("amount")),
+                        raw_id,
+                        line_no,
+                        source_file,
+                    ),
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-            """, (
-                ts, ts_raw, ts_quality, "bank_withdraw",
-                m.group("id"), (m.group("name") or "").strip(),
-                normalize_money(m.group("amount")),
-                raw_id, line_no, source_file
-            ))
-            inserted += 1
-            continue
+                inserted += 1
+                continue
 
-        # --- Audit ---
-        if should_audit(line):
-            _audit_unparsed(raw_id, ts, ts_raw, line)
-            unparsed += 1
+            # --- Audit ---
+            if should_audit(line):
+                _audit_unparsed(raw_id, ts, ts_raw, line)
+                unparsed += 1
 
-    conn.commit()
-    conn.close()
+        conn.commit()
 
-    console.print(Panel(f"Events inserted: {inserted}\nUnparsed lines: {unparsed}", title="EVENT PARSE"))
+    if not silent:
+        console.print(Panel(f"Events inserted: {inserted}\nUnparsed lines: {unparsed}", title="EVENT PARSE"))
     return inserted
 
 

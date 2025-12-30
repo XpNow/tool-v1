@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from .db import get_db
+from .db import get_conn
 
 
 console = Console()
@@ -11,23 +11,21 @@ console = Console()
 
 def show_status():
     """Read-only coverage view: raw logs, normalized lines, events by type."""
-    conn = get_db()
-    cur = conn.cursor()
+    with get_conn() as conn:
+        cur = conn.cursor()
+        raw_n = cur.execute("SELECT COUNT(*) c FROM raw_logs").fetchone()["c"]
+        norm_n = cur.execute("SELECT COUNT(*) c FROM normalized_lines").fetchone()["c"]
+        ev_n = cur.execute("SELECT COUNT(*) c FROM events").fetchone()["c"]
 
-    raw_n = cur.execute("SELECT COUNT(*) c FROM raw_logs").fetchone()["c"]
-    norm_n = cur.execute("SELECT COUNT(*) c FROM normalized_lines").fetchone()["c"]
-    ev_n = cur.execute("SELECT COUNT(*) c FROM events").fetchone()["c"]
+        by_type = cur.execute(
+            """
+            SELECT event_type, COUNT(*) c
+            FROM events
+            GROUP BY event_type
+            ORDER BY c DESC
+            """
+        ).fetchall()
 
-    by_type = cur.execute(
-        """
-        SELECT event_type, COUNT(*) c
-        FROM events
-        GROUP BY event_type
-        ORDER BY c DESC
-        """
-    ).fetchall()
-
-    conn.close()
 
     console.print(
         Panel(

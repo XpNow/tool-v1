@@ -40,8 +40,9 @@ h2{margin-top:28px}
 
 </body></html>"""
 
-def build_hub():
+def build_hub(silent: bool = False):
     HUB_DIR.mkdir(parents=True, exist_ok=True)
     p = HUB_DIR / "index.html"
     p.write_text(HELP_HTML, encoding="utf-8")
-    console.print(Panel(str(p), title="HUB BUILT"))
+    if not silent:
+        console.print(Panel(str(p), title="HUB BUILT"))

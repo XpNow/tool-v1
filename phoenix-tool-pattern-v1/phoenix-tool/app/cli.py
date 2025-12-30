@@ -30,8 +30,8 @@ from .render import (
     render_report,
     render_audit,
 )
-from phoenix_tool.core import commands as core_commands
-from phoenix_tool.core.response import WarningItem, build_error, build_response
+from phoenix_tool.core.response import build_error
+from phoenix_tool.core.runner import run_command
 
 console = Console()
 
@@ -111,6 +111,10 @@ web
 
 Options:
   --format pretty|json (default: pretty)
+
+Examples:
+  search id=633 --format json
+  flow 633 out 3 120 "gold bar"
 
 debug
   Create a debug bundle zip (output/debug/)
@@ -231,89 +235,78 @@ def main(argv=None):
     # ensure DB schema
     init_db()
 
-    def emit_json(command: str, params: dict, data: dict, ok: bool = True):
-        warnings = data.pop("warnings", [])
-        response = build_response(command=command, params=params, data=data, warnings=warnings, ok=ok)
-        print(json.dumps(response, ensure_ascii=False))
+    def emit_response(payload: dict) -> int:
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0 if payload.get("ok") else 1
 
-    def emit_error(command: str, params: dict, message: str):
-        response = build_error(command=command, params=params, message=message)
+    def emit_error(command: str, params: dict, message: str, code: str = "VALIDATION", hint: str = "Check usage."):
+        response = build_error(command=command, params=params, message=message, code=code, hint=hint)
         print(json.dumps(response, ensure_ascii=False))
+        return 1
 
     if cmd == "load":
         if not args:
             if output_format == "json":
-                emit_error("ingest", {}, "Usage: load <path>")
-                return 1
+                return emit_error("ingest", {}, "Usage: load <path>")
             console.print("[red]Usage:[/red] load <path>")
             return 1
-        n = load_logs(args[0])
         if output_format == "json":
-            emit_json("ingest", {"path": args[0]}, {"loaded": n, "path": args[0]})
-            return 0
+            return emit_response(run_command("ingest", {"path": args[0]}))
+        n = load_logs(args[0])
         console.print(Panel(f"Raw logs loaded: {n}", title="LOAD"))
         return 0
 
     if cmd == "ingest":
         if not args:
             if output_format == "json":
-                emit_error("ingest", {}, "Usage: ingest <path>")
-                return 1
+                return emit_error("ingest", {}, "Usage: ingest <path>")
             console.print("[red]Usage:[/red] ingest <path>")
             return 1
-        data = core_commands.ingest(args[0])
         if output_format == "json":
-            emit_json("ingest", {"path": args[0]}, data)
-            return 0
-        console.print(Panel(f"Raw logs loaded: {data['loaded']}", title="LOAD"))
+            return emit_response(run_command("ingest", {"path": args[0]}))
+        n = load_logs(args[0])
+        console.print(Panel(f"Raw logs loaded: {n}", title="LOAD"))
         return 0
 
     if cmd == "normalize":
-        n = normalize_all()
         if output_format == "json":
-            emit_json("normalize", {}, {"normalized": n})
-            return 0
+            return emit_response(run_command("normalize", {}))
+        n = normalize_all()
         console.print(Panel(f"Normalized lines inserted: {n}", title="NORMALIZE"))
         return 0
 
     if cmd == "parse":
-        n = parse_events()
         if output_format == "json":
-            emit_json("parse", {}, {"parsed": n})
-            return 0
+            return emit_response(run_command("parse", {}))
+        n = parse_events()
         console.print(Panel(f"Events parsed and inserted: {n}", title="PARSE"))
         return 0
 
     if cmd == "build":
+        if output_format == "json":
+            return emit_response(run_command("build", {}))
         n_norm = normalize_all()
         n_parse = parse_events()
-        if output_format == "json":
-            emit_json("build", {}, {"normalized": n_norm, "parsed": n_parse})
-            return 0
         console.print(Panel(f"Normalized lines inserted: {n_norm}", title="NORMALIZE"))
         console.print(Panel(f"Events parsed and inserted: {n_parse}", title="PARSE"))
         return 0
 
     if cmd == "identities":
-        n = rebuild_identities(silent=output_format == "json")
         if output_format == "json":
-            emit_json("identities", {}, {"sightings": n})
-            return 0
+            return emit_response(run_command("identities", {}))
+        n = rebuild_identities(silent=output_format == "json")
         console.print(Panel(f"Identity sightings rebuilt: {n}", title="IDENTITIES"))
         return 0
 
     if cmd == "identity":
         if not args:
             if output_format == "json":
-                emit_error("identity", {}, "Usage: identity <id|name>")
-                return 1
+                return emit_error("identity", {}, "Usage: identity <id|name>")
             console.print("[red]Usage:[/red] identity <id|name>")
             return 1
         query = " ".join(args)
         if output_format == "json":
-            data = core_commands.identity_lookup(query)
-            emit_json("identity", {"query": query}, data)
-            return 0
+            return emit_response(run_command("identity", {"query": query}))
         show_identity(query)
         return 0
 
@@ -343,6 +336,22 @@ def main(argv=None):
             parts = [p.strip() for p in kv["between"].split(",") if p.strip()]
             if len(parts)==2:
                 between_ids = parts
+
+        if output_format == "json":
+            params = {
+                "ids": ids,
+                "between_ids": between_ids,
+                "name": kv.get("name"),
+                "item": kv.get("item"),
+                "event_type": kv.get("type"),
+                "min_money": int(kv.get("min$", "0")) if "min$" in kv else None,
+                "max_money": int(kv.get("max$", "0")) if "max$" in kv else None,
+                "ts_from": kv.get("from") or kv.get("start") or kv.get("since"),
+                "ts_to": kv.get("to") or kv.get("end") or kv.get("until"),
+                "limit": int(kv.get("limit", "500")),
+                "collapse": kv.get("collapse", "smart"),
+            }
+            return emit_response(run_command("search", params))
 
         rows = search_events(
             ids=ids,
@@ -377,31 +386,13 @@ def main(argv=None):
             'between_ids': between_ids,
             'matched': matched,
         }
-        if output_format == "json":
-            params = {
-                "ids": ids,
-                "between_ids": between_ids,
-                "name": kv.get("name"),
-                "item": kv.get("item"),
-                "event_type": kv.get("type"),
-                "min_money": int(kv.get("min$", "0")) if "min$" in kv else None,
-                "max_money": int(kv.get("max$", "0")) if "max$" in kv else None,
-                "ts_from": kv.get("from") or kv.get("start") or kv.get("since"),
-                "ts_to": kv.get("to") or kv.get("end") or kv.get("until"),
-                "limit": int(kv.get("limit", "500")),
-                "collapse": kv.get("collapse", "smart"),
-            }
-            data = core_commands.search(params)
-            emit_json("search", params, data)
-            return 0
         render_search(rows, meta)
         return 0
 
     if cmd == "trace":
         if not args:
             if output_format == "json":
-                emit_error("trace", {}, "Usage: trace <id> [depth=2] [item=...]")
-                return 1
+                return emit_error("trace", {}, "Usage: trace <id> [depth=2] [item=...]")
             console.print("[red]Usage:[/red] trace <id> [depth=2] [item=...]")
             return 1
         pid = args[0]
@@ -416,19 +407,16 @@ def main(argv=None):
 
         depth = int(kv.get("depth", "2"))
         item = kv.get("item")
-        events, nodes = trace(pid, depth=depth, item_filter=item)
         if output_format == "json":
-            data = core_commands.trace_path(pid, depth=depth, item=item)
-            emit_json("trace", {"id": pid, "depth": depth, "item": item}, data)
-            return 0
+            return emit_response(run_command("trace", {"id": pid, "depth": depth, "item": item}))
+        events, nodes = trace(pid, depth=depth, item_filter=item)
         render_trace(pid, events, nodes, depth, item)
         return 0
 
     if cmd == "flow":
         if not args:
             if output_format == "json":
-                emit_error("flow", {}, "Usage: flow <id> [dir=in|out] [depth=4] [window=120] [item=...]")
-                return 1
+                return emit_error("flow", {}, "Usage: flow <id> [dir=in|out] [depth=4] [window=120] [item=...]")
             console.print("[red]Usage:[/red] flow <id> [dir=in|out] [depth=4] [window=120] [item=...]")
             return 1
         pid = args[0]
@@ -450,9 +438,9 @@ def main(argv=None):
         window = int(kv.get("window", "120"))
         item = kv.get("item")
         if output_format == "json":
-            data = core_commands.flow(pid, direction=direction, depth=depth, window=window, item=item)
-            emit_json("flow", {"id": pid, "dir": direction, "depth": depth, "window": window, "item": item}, data)
-            return 0
+            return emit_response(
+                run_command("flow", {"id": pid, "direction": direction, "depth": depth, "window": window, "item": item})
+            )
         if direction.lower() == "both":
             chains_out = build_flow(pid, direction="out", depth=depth, window_minutes=window, item_filter=item)
             chains_in = build_flow(pid, direction="in", depth=depth, window_minutes=window, item_filter=item)
@@ -466,16 +454,13 @@ def main(argv=None):
     if cmd == "summary":
         if not args:
             if output_format == "json":
-                emit_error("summary", {}, "Usage: summary <id>")
-                return 1
+                return emit_error("summary", {}, "Usage: summary <id>")
             console.print("[red]Usage:[/red] summary <id>")
             return 1
         kv = _parse_kv_args(args[1:])
-        summary = summary_for_id(args[0], collapse=kv.get("collapse"))
         if output_format == "json":
-            data = core_commands.summary(args[0], collapse=kv.get("collapse"))
-            emit_json("summary", {"id": args[0], "collapse": kv.get("collapse")}, data)
-            return 0
+            return emit_response(run_command("summary", {"id": args[0], "collapse": kv.get("collapse")}))
+        summary = summary_for_id(args[0], collapse=kv.get("collapse"))
         render_summary(
             summary["pid"],
             summary["events"],
@@ -490,63 +475,48 @@ def main(argv=None):
     if cmd == "report":
         if not args:
             if output_format == "json":
-                emit_error("report", {}, "Usage: report <id>")
-                return 1
+                return emit_error("report", {}, "Usage: report <id>")
             console.print("[red]Usage:[/red] report <id>")
             return 1
-        case_dir, events, identities = build_case_file(args[0])
         if output_format == "json":
-            data = core_commands.report(args[0])
-            emit_json("report", {"id": args[0]}, data)
-            return 0
+            return emit_response(run_command("report", {"id": args[0]}))
+        case_dir, events, identities = build_case_file(args[0])
         render_report(args[0], case_dir, events, identities)
         return 0
 
     if cmd == "storages":
         if not args:
             if output_format == "json":
-                emit_error("storages", {}, "Usage: storages <id> [container=NAME] [from=ISO] [to=ISO]")
-                return 1
+                return emit_error("storages", {}, "Usage: storages <id> [container=NAME] [from=ISO] [to=ISO]")
             console.print("[red]Usage:[/red] storages <id> [container=NAME] [from=ISO] [to=ISO]")
             return 1
         pid = args[0]
         kv = _parse_kv_args(args[1:])
+        if output_format == "json":
+            return emit_response(
+                run_command(
+                    "storages",
+                    {"id": pid, "container": kv.get("container"), "from": kv.get("from"), "to": kv.get("to")},
+                )
+            )
         containers, warnings, negative_count = compute_storage_summary(
             pid,
             container_filter=kv.get("container"),
             ts_from=kv.get("from"),
             ts_to=kv.get("to"),
         )
-        if output_format == "json":
-            data = core_commands.storages(pid, kv.get("container"), kv.get("from"), kv.get("to"))
-            emit_json(
-                "storages",
-                {"id": pid, "container": kv.get("container"), "from": kv.get("from"), "to": kv.get("to")},
-                data,
-            )
-            return 0
         render_storages(pid, kv.get("container"), containers, warnings, negative_count)
         return 0
 
     if cmd in ("ask", "chat"):
         if not args:
             if output_format == "json":
-                emit_error("ask", {}, "Usage: ask <question>")
-                return 1
+                return emit_error("ask", {}, "Usage: ask <question>")
             console.print("[red]Usage:[/red] ask <question>")
             return 1
         q = " ".join(args).strip()
         if output_format == "json":
-            data = core_commands.ask(q)
-            ok = data.get("ok", True)
-            if not ok:
-                message = data.get("message", "Ask failed")
-                warn = [WarningItem(code=data.get("error", "ASK_ERROR").upper(), message=message, count=1)]
-                response = build_response(command="ask", params={"question": q}, data=data, warnings=warn, ok=False)
-                print(json.dumps(response, ensure_ascii=False))
-                return 1
-            emit_json("ask", {"question": q}, data, ok=True)
-            return 0
+            return emit_response(run_command("ask", {"question": q}))
         ask_dispatch(q)
         return 0
 
@@ -554,72 +524,66 @@ def main(argv=None):
         kv = _parse_kv_args(args)
         if "tag" not in kv or "kind" not in kv:
             if output_format == "json":
-                emit_error("save", kv, "Usage: save tag=NAME kind=trace|flow|search|summary [args...]")
-                return 1
+                return emit_error("save", kv, "Usage: save tag=NAME kind=trace|flow|search|summary [args...]")
             console.print("[red]Usage:[/red] save tag=NAME kind=trace|flow|search|summary [args...] ")
             return 1
-        save_payload(kv['tag'], kv['kind'], kv)
         if output_format == "json":
-            emit_json("save", kv, {"saved": kv["tag"], "kind": kv["kind"]})
-            return 0
+            return emit_response(run_command("save", kv))
+        save_payload(kv['tag'], kv['kind'], kv)
         console.print(Panel(f"Saved: {kv['tag']}", title="SAVE"))
         return 0
 
     if cmd == "export":
         if not args:
             if output_format == "json":
-                emit_error("export", {}, "Usage: export <tag> fmt=txt|html|json")
-                return 1
+                return emit_error("export", {}, "Usage: export <tag> fmt=txt|html|json")
             console.print("[red]Usage:[/red] export <tag> fmt=txt|html|json")
             return 1
         tag = args[0]
         kv = _parse_kv_args(args[1:])
-        export_tag(tag, fmt=kv.get("fmt", "txt"))
         if output_format == "json":
-            emit_json("export", {"tag": tag, "fmt": kv.get("fmt", "txt")}, {"exported": tag})
-            return 0
+            return emit_response(run_command("export", {"tag": tag, "fmt": kv.get("fmt", "txt")}))
+        export_tag(tag, fmt=kv.get("fmt", "txt"))
         return 0
 
     if cmd == "hub":
-        out = build_hub()
         if output_format == "json":
-            emit_json("hub", {}, {"path": str(out)})
-            return 0
+            return emit_response(run_command("hub", {}))
+        out = build_hub()
         console.print(Panel(str(out), title="HUB"))
         return 0
 
     if cmd == "audit":
-        out_path, total_groups, limit_groups = audit_unparsed()
         if output_format == "json":
-            emit_json("audit", {}, {"path": str(out_path), "total_groups": total_groups, "limit_groups": limit_groups})
-            return 0
+            return emit_response(run_command("audit", {}))
+        out_path, total_groups, limit_groups = audit_unparsed()
         render_audit(out_path, total_groups, limit_groups)
         return 0
 
     if cmd == "status":
         if output_format == "json":
-            data = core_commands.status()
-            emit_json("status", {}, data)
-            return 0
+            return emit_response(run_command("status", {}))
         show_status()
         return 0
 
     if cmd == "debug":
-        out = make_debug_bundle()
         if output_format == "json":
-            emit_json("debug", {}, {"path": str(out)})
-            return 0
+            return emit_response(run_command("debug", {}))
+        out = make_debug_bundle()
         console.print(Panel(str(out), title="DEBUG"))
         return 0
 
     if cmd == "web":
         if output_format == "json":
-            emit_error("web", {}, "Use `python -m phoenix_tool.api.server` to start the web server.")
-            return 1
+            return emit_error("web", {}, "Use `python -m phoenix_tool.api.server` to start the web server.", hint="Run the web server command directly.")
+        import uvicorn
+
         console.print("[green]Starting web server...[/green]")
-        console.print("Run: python -m phoenix_tool.api.server")
+        uvicorn.run("phoenix_tool.api.server:app", host="127.0.0.1", port=8000, reload=False)
         return 0
 
+    if output_format == "json":
+        return emit_error("unknown", {"command": cmd}, f"Unknown command: {cmd}", hint="Run `help` to see commands.")
     console.print(Panel(f"Unknown command: {cmd}\n\n" + HELP_TEXT.strip(), title="ERROR"))
     return 1
 
