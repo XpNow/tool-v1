@@ -440,7 +440,10 @@ def main(argv=None):
         item = kv.get("item")
         if output_format == "json":
             return emit_response(
-                run_command("flow", {"id": pid, "direction": direction, "depth": depth, "window": window, "item": item})
+                run_command(
+                    "flow",
+                    {"entity": pid, "direction": direction, "depth": depth, "window": window, "item": item},
+                )
             )
         if direction.lower() == "both":
             chains_out = build_flow(pid, direction="out", depth=depth, window_minutes=window, item_filter=item)
@@ -460,7 +463,7 @@ def main(argv=None):
             return 1
         kv = _parse_kv_args(args[1:])
         if output_format == "json":
-            return emit_response(run_command("summary", {"id": args[0], "collapse": kv.get("collapse")}))
+            return emit_response(run_command("summary", {"entity": args[0], "collapse": kv.get("collapse")}))
         summary = summary_for_id(args[0], collapse=kv.get("collapse"))
         render_summary(
             summary["pid"],
@@ -497,7 +500,7 @@ def main(argv=None):
             return emit_response(
                 run_command(
                     "storages",
-                    {"id": pid, "container": kv.get("container"), "from": kv.get("from"), "to": kv.get("to")},
+                    {"entity": pid, "container": kv.get("container"), "from": kv.get("from"), "to": kv.get("to")},
                 )
             )
         containers, warnings, negative_count = compute_storage_summary(

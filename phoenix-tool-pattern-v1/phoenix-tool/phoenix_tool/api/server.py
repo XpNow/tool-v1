@@ -115,7 +115,7 @@ async def search(
 
 @app.get("/summary")
 async def summary(entity: str, collapse: str | None = "smart"):
-    return run_command("summary", {"id": entity, "collapse": collapse})
+    return run_command("summary", {"entity": entity, "collapse": collapse})
 
 
 @app.get("/storages")
@@ -127,7 +127,7 @@ async def storages(
 ):
     return run_command(
         "storages",
-        {"id": entity, "container": container, "from": from_ts, "to": to_ts},
+        {"entity": entity, "container": container, "from": from_ts, "to": to_ts},
     )
 
 
@@ -135,7 +135,7 @@ async def storages(
 async def flow(entity: str, direction: str = "both", depth: int = 4, window: int = 120, item: Optional[str] = None):
     return run_command(
         "flow",
-        {"id": entity, "direction": direction, "depth": depth, "window": window, "item": item},
+        {"entity": entity, "direction": direction, "depth": depth, "window": window, "item": item},
     )
 
 
