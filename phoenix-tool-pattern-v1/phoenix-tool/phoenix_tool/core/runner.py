@@ -302,7 +302,11 @@ def run_command(command: str, params: dict[str, Any] | None = None) -> dict[str,
                 return empty
             data = core_commands.ask(str(question))
             if data.get("ok") is False:
-                return _error("ask", {"question": question}, "VALIDATION", data.get("message", "Ask failed."), "Include a valid entity id.")
+                examples = data.get("examples") or []
+                hint = "Include a valid entity id."
+                if examples:
+                    hint = "Try queries like: " + "; ".join(examples)
+                return _error("ask", {"question": question}, "VALIDATION", data.get("message", "Ask failed."), hint)
             return build_response("ask", {"question": str(question)}, data)
 
         if cmd == "save":
