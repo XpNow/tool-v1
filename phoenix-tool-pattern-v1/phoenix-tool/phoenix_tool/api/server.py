@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.db import init_db
 from phoenix_tool.core.runner import run_command
 from phoenix_tool.core.response import ErrorItem, build_response
 
@@ -25,6 +26,11 @@ app.add_middleware(
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 
 def _format_validation_details(exc: RequestValidationError) -> str:
     parts = []
