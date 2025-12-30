@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.db import init_db
 from phoenix_tool.core.runner import run_command
 from phoenix_tool.core.response import ErrorItem, build_response
 
@@ -25,6 +26,11 @@ app.add_middleware(
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 
 def _format_validation_details(exc: RequestValidationError) -> str:
     parts = []
@@ -115,7 +121,7 @@ async def search(
 
 @app.get("/summary")
 async def summary(entity: str, collapse: str | None = "smart"):
-    return run_command("summary", {"id": entity, "collapse": collapse})
+    return run_command("summary", {"entity": entity, "collapse": collapse})
 
 
 @app.get("/storages")
@@ -127,7 +133,7 @@ async def storages(
 ):
     return run_command(
         "storages",
-        {"id": entity, "container": container, "from": from_ts, "to": to_ts},
+        {"entity": entity, "container": container, "from": from_ts, "to": to_ts},
     )
 
 
@@ -135,7 +141,7 @@ async def storages(
 async def flow(entity: str, direction: str = "both", depth: int = 4, window: int = 120, item: Optional[str] = None):
     return run_command(
         "flow",
-        {"id": entity, "direction": direction, "depth": depth, "window": window, "item": item},
+        {"entity": entity, "direction": direction, "depth": depth, "window": window, "item": item},
     )
 
 

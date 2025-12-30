@@ -317,10 +317,6 @@ async function runSearch(offset) {
 function renderSummaryView() {
   viewTitle.textContent = "Summary";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Summary",
     `
@@ -331,6 +327,10 @@ function renderSummaryView() {
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
     renderLoading("Building summary…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
     const data = await fetchJson(`/summary?entity=${encodeURIComponent(params.entity || "")}`);
     state.lastResponse = data;
     if (!data.ok) {
@@ -391,10 +391,6 @@ function renderSummaryView() {
 function renderStoragesView() {
   viewTitle.textContent = "Storages";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Storage filters",
     `
@@ -410,6 +406,10 @@ function renderStoragesView() {
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
     renderLoading("Loading containers…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/storages?${query}`);
     state.lastResponse = data;
@@ -476,10 +476,6 @@ function renderStoragesView() {
 function renderFlowView() {
   viewTitle.textContent = "Flow";
   const entityValue = state.currentEntity || "";
-  if (!entityValue) {
-    renderEntityRequiredEmpty();
-    return;
-  }
   viewContent.innerHTML = renderFormCard(
     "Flow settings",
     `
@@ -500,6 +496,10 @@ function renderFlowView() {
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
     renderLoading("Tracing flow…");
     const params = collectFields();
+    if (!params.entity) {
+      renderEntityRequiredEmpty();
+      return;
+    }
     const query = new URLSearchParams(params).toString();
     const data = await fetchJson(`/flow?${query}`);
     state.lastResponse = data;
