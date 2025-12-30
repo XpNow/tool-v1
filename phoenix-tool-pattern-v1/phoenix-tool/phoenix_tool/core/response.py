@@ -43,14 +43,20 @@ def build_response(
         "data": data,
         "error": error.__dict__ if error else None,
         "meta": {
-            "version": "1.0",
             "db_path": str(get_db_path()),
             "generated_at": _now_iso(),
         },
     }
 
 
-def build_error(command: str, params: dict[str, Any], message: str) -> dict[str, Any]:
-    warn = WarningItem(code="ERROR", message=message, count=1)
-    err = ErrorItem(code="INTERNAL", message=message, hint="Check logs or retry.", details=None)
+def build_error(
+    command: str,
+    params: dict[str, Any],
+    message: str,
+    code: str = "INTERNAL",
+    hint: str = "Check logs or retry.",
+    details: str | None = None,
+) -> dict[str, Any]:
+    warn = WarningItem(code=code, message=message, count=1)
+    err = ErrorItem(code=code, message=message, hint=hint, details=details)
     return build_response(command, params, data=None, warnings=[warn], ok=False, error=err)

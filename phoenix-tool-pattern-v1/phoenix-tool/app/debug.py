@@ -8,7 +8,7 @@ console = Console()
 BASE_DIR = Path(__file__).resolve().parents[1]
 DEBUG_DIR = BASE_DIR / "output" / "debug"
 
-def make_debug_bundle():
+def make_debug_bundle(silent: bool = False):
     DEBUG_DIR.mkdir(parents=True, exist_ok=True)
     zpath = DEBUG_DIR / "debug_bundle.zip"
 
@@ -24,4 +24,5 @@ def make_debug_bundle():
         if audit.exists():
             z.write(audit, arcname="output/audit/audit_samples.txt")
 
-    console.print(Panel(str(zpath), title="DEBUG BUNDLE CREATED"))
+    if not silent:
+        console.print(Panel(str(zpath), title="DEBUG BUNDLE CREATED"))

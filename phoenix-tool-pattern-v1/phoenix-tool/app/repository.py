@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from .db import get_db
+from .db import get_conn
 from .models import Event, IdentityRecord, PartnerStat
 
 
@@ -48,10 +48,9 @@ def _row_to_event(row) -> Event:
 
 
 def _fetch_events(sql: str, params: Iterable[object]) -> list[Event]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(sql, list(params)).fetchall()
-    conn.close()
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(sql, list(params)).fetchall()
     return [_row_to_event(row) for row in rows]
 
 
@@ -125,6 +124,7 @@ def search_events(
     ts_from: str | None = None,
     ts_to: str | None = None,
     limit: int = 500,
+    offset: int = 0,
 ) -> list[Event]:
     sql, params = build_search_query(
         ids=ids,
@@ -137,8 +137,9 @@ def search_events(
         ts_from=ts_from,
         ts_to=ts_to,
     )
-    sql += " ORDER BY (ts IS NULL) ASC, ts ASC, id ASC LIMIT ?"
+    sql += " ORDER BY (ts IS NULL) ASC, ts ASC, id ASC LIMIT ? OFFSET ?"
     params.append(int(limit))
+    params.append(int(offset))
     return _fetch_events(sql, params)
 
 
@@ -166,10 +167,9 @@ def count_search_events(
     )
     count_sql = "SELECT COUNT(*) c FROM (" + sql + ")"
 
-    conn = get_db()
-    cur = conn.cursor()
-    count = cur.execute(count_sql, params).fetchone()["c"]
-    conn.close()
+    with get_conn() as conn:
+        cur = conn.cursor()
+        count = cur.execute(count_sql, params).fetchone()["c"]
     return int(count)
 
 
@@ -192,10 +192,10 @@ def fetch_events_for_id(pid: str, ts_from: str | None = None, ts_to: str | None 
 
 
 def fetch_event_type_counts_for_id(pid: str) -> list[tuple[str, int]]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
         SELECT event_type, COUNT(*) c
         FROM events
         WHERE src_id=? OR dst_id=?
@@ -204,15 +204,14 @@ def fetch_event_type_counts_for_id(pid: str) -> list[tuple[str, int]]:
         """,
         (pid, pid),
     ).fetchall()
-    conn.close()
     return [(r["event_type"], r["c"]) for r in rows]
 
 
 def fetch_money_totals_for_id(pid: str) -> tuple[int, int]:
-    conn = get_db()
-    cur = conn.cursor()
-    money_out = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        money_out = cur.execute(
+            """
         SELECT COALESCE(SUM(money),0) s
         FROM events
         WHERE src_id=? AND money IS NOT NULL
@@ -220,23 +219,22 @@ def fetch_money_totals_for_id(pid: str) -> tuple[int, int]:
         (pid,),
     ).fetchone()["s"]
 
-    money_in = cur.execute(
-        """
+        money_in = cur.execute(
+            """
         SELECT COALESCE(SUM(money),0) s
         FROM events
         WHERE dst_id=? AND money IS NOT NULL
         """,
         (pid,),
     ).fetchone()["s"]
-    conn.close()
     return int(money_in or 0), int(money_out or 0)
 
 
 def fetch_top_partners(pid: str, limit: int = 15) -> list[PartnerStat]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
         SELECT
           CASE WHEN src_id=? THEN dst_id ELSE src_id END partner_id,
           CASE WHEN src_id=? THEN dst_name ELSE src_name END partner_name,
@@ -250,7 +248,6 @@ def fetch_top_partners(pid: str, limit: int = 15) -> list[PartnerStat]:
         """,
         (pid, pid, pid, pid, pid, int(limit)),
     ).fetchall()
-    conn.close()
     return [PartnerStat(r["partner_id"], r["partner_name"], int(r["c"])) for r in rows]
 
 
@@ -305,10 +302,10 @@ def fetch_trace_events(event_types: Iterable[str], item_filter: str | None = Non
 
 
 def fetch_identities(pid: str) -> list[IdentityRecord]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
         SELECT name, ip, sightings, player_id
         FROM identities
         WHERE player_id=?
@@ -316,7 +313,6 @@ def fetch_identities(pid: str) -> list[IdentityRecord]:
         """,
         (pid,),
     ).fetchall()
-    conn.close()
     return [IdentityRecord(r["player_id"], r["name"], r["ip"], int(r["sightings"])) for r in rows]
 
 
@@ -352,44 +348,40 @@ def fetch_directional_events(
 
 
 def fetch_normalized_lines():
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
         SELECT raw_log_id, line_no, ts, ts_raw, text
         FROM normalized_lines
         ORDER BY (ts IS NULL) ASC, ts ASC, raw_log_id ASC, line_no ASC
         """
     ).fetchall()
-    conn.close()
     return rows
 
 
 def fetch_raw_log_sources() -> dict[int, str]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute("SELECT id, source_file FROM raw_logs").fetchall()
-    conn.close()
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute("SELECT id, source_file FROM raw_logs").fetchall()
     return {r["id"]: r["source_file"] for r in rows}
 
 
 def fetch_event_counts() -> dict:
-    conn = get_db()
-    cur = conn.cursor()
+    with get_conn() as conn:
+        cur = conn.cursor()
+        raw_n = cur.execute("SELECT COUNT(*) c FROM raw_logs").fetchone()["c"]
+        norm_n = cur.execute("SELECT COUNT(*) c FROM normalized_lines").fetchone()["c"]
+        ev_n = cur.execute("SELECT COUNT(*) c FROM events").fetchone()["c"]
 
-    raw_n = cur.execute("SELECT COUNT(*) c FROM raw_logs").fetchone()["c"]
-    norm_n = cur.execute("SELECT COUNT(*) c FROM normalized_lines").fetchone()["c"]
-    ev_n = cur.execute("SELECT COUNT(*) c FROM events").fetchone()["c"]
-
-    by_type_rows = cur.execute(
-        """
+        by_type_rows = cur.execute(
+            """
         SELECT event_type, COUNT(*) c
         FROM events
         GROUP BY event_type
         ORDER BY c DESC
         """
     ).fetchall()
-    conn.close()
     return {
         "raw_logs": int(raw_n),
         "normalized_lines": int(norm_n),
@@ -399,10 +391,10 @@ def fetch_event_counts() -> dict:
 
 
 def fetch_recent_entities(limit: int = 10) -> list[dict]:
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
         SELECT src_id as player_id, src_name as name, MAX(ts) as last_seen
         FROM events
         WHERE src_id IS NOT NULL
@@ -412,7 +404,6 @@ def fetch_recent_entities(limit: int = 10) -> list[dict]:
         """,
         (int(limit),),
     ).fetchall()
-    conn.close()
     return [
         {
             "player_id": r["player_id"],
@@ -424,11 +415,11 @@ def fetch_recent_entities(limit: int = 10) -> list[dict]:
 
 
 def search_entities(query: str, limit: int = 20) -> list[dict]:
-    conn = get_db()
-    cur = conn.cursor()
-    q = f"%{query}%"
-    rows = cur.execute(
-        """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        q = f"%{query}%"
+        rows = cur.execute(
+            """
         SELECT src_id as player_id, src_name as name, MAX(ts) as last_seen
         FROM events
         WHERE src_id LIKE ? OR src_name LIKE ?
@@ -438,7 +429,6 @@ def search_entities(query: str, limit: int = 20) -> list[dict]:
         """,
         (q, q, int(limit)),
     ).fetchall()
-    conn.close()
     return [
         {
             "player_id": r["player_id"],

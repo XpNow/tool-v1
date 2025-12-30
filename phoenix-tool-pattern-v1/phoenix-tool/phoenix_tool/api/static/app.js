@@ -1,365 +1,887 @@
-const api = (path, opts = {}) => fetch(path, opts).then((r) => r.json());
-
 const state = {
-  entity: null,
-  view: "search",
+  currentView: "home",
+  currentEntity: null,
+  recentEntities: [],
+  lastResponse: null,
+  searchParams: {},
 };
 
 const viewTitle = document.getElementById("view-title");
-const viewHelp = document.getElementById("view-help");
-const controls = document.getElementById("controls");
-const results = document.getElementById("results");
-const recentEntities = document.getElementById("recent-entities");
-const globalSearch = document.getElementById("global-search");
-const banner = document.getElementById("banner");
+const viewContent = document.getElementById("view-content");
+const recentEntitiesEl = document.getElementById("recent-entities");
+const globalAskInput = document.getElementById("global-ask-input");
+const globalAskBtn = document.getElementById("global-ask-btn");
+const dbStatus = document.getElementById("db-status");
+const buildBtn = document.getElementById("build-db-btn");
 
-const viewConfig = {
-  search: { title: "Search", help: "Find events by entity, type, or item." },
-  summary: { title: "Summary", help: "Quick overview of totals and top partners." },
-  storages: { title: "Storages", help: "Container balances and inventory movement." },
-  flow: { title: "Flow", help: "Trace time-coherent chains." },
-  trace: { title: "Trace", help: "Network adjacency within a depth." },
-  between: { title: "Between", help: "Find events connecting two entities." },
-  reports: { title: "Reports", help: "Generate or open reports for an entity." },
-  ask: { title: "Ask", help: "Ask a question and review evidence." },
-};
+function setStatus(text, tone) {
+  dbStatus.textContent = text;
+  dbStatus.className = `rounded-full border px-3 py-1 text-xs ${
+    tone === "ok"
+      ? "border-emerald-400/40 text-emerald-200"
+      : tone === "warn"
+      ? "border-orange-400/40 text-orange-200"
+      : "border-red-500/50 text-red-300"
+  }`;
+}
+
+async function fetchJson(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    return {
+      ok: false,
+      error: {
+        code: "INTERNAL",
+        message: "Network error.",
+        hint: "Check the API server and retry.",
+        details: err.message,
+      },
+    };
+  }
+}
+
+function renderLoading(message = "Loading…") {
+  viewContent.innerHTML = `
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/60 p-6 text-slate-300">
+      ${message}
+    </div>
+  `;
+}
+
+function renderError(error) {
+  viewContent.innerHTML = `
+    <div class="rounded-xl border border-red-500/40 bg-red-500/10 p-6">
+      <div class="text-sm uppercase tracking-wide text-red-200">Error</div>
+      <div class="mt-2 text-lg font-semibold">${error.message || "Something went wrong."}</div>
+      <div class="mt-1 text-sm text-red-200/80">${error.hint || "Check inputs and retry."}</div>
+      <details class="mt-4 text-xs text-red-200/70">
+        <summary class="cursor-pointer">Details</summary>
+        <pre class="mt-2 whitespace-pre-wrap">${error.details || "No additional details."}</pre>
+      </details>
+    </div>
+  `;
+}
+
+function renderErrorFromResponse(data) {
+  if (data?.error) {
+    renderError(data.error);
+    return;
+  }
+  if (data?.detail) {
+    renderError({
+      message: "Validation error.",
+      hint: "Check inputs and retry.",
+      details: JSON.stringify(data.detail, null, 2),
+    });
+    return;
+  }
+  renderError({ message: "Something went wrong.", hint: "Check inputs and retry.", details: "No additional details." });
+}
+
+function renderEmpty(message, hint) {
+  viewContent.innerHTML = `
+    <div class="rounded-xl border border-orange-400/30 bg-orange-400/10 p-6">
+      <div class="text-sm uppercase tracking-wide text-orange-200">Empty</div>
+      <div class="mt-2 text-lg font-semibold">${message}</div>
+      <div class="mt-1 text-sm text-orange-100/70">${hint || "Try another filter or ingest more data."}</div>
+    </div>
+  `;
+}
+
+function renderWarnings(warnings = []) {
+  if (!warnings.length) return "";
+  return `
+    <div class="mb-4 rounded-xl border border-orange-400/40 bg-orange-400/10 p-4 text-sm text-orange-100">
+      <div class="font-semibold text-orange-200">Warnings</div>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        ${warnings.map((w) => `<li>${w.message}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function renderRawToggle(payload) {
+  return `
+    <div class="mt-6 rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+      <label class="flex items-center gap-2 text-sm text-slate-300">
+        <input type="checkbox" class="raw-toggle h-4 w-4 rounded border-orange-900/50 bg-[#1a0b0b]" />
+        View raw JSON
+      </label>
+      <pre class="raw-json mt-3 hidden max-h-64 overflow-auto rounded-lg bg-[#1a0b0b] p-3 text-xs text-slate-200">${JSON.stringify(
+        payload,
+        null,
+        2,
+      )}</pre>
+    </div>
+  `;
+}
+
+function attachRawToggle() {
+  const toggle = viewContent.querySelector(".raw-toggle");
+  const raw = viewContent.querySelector(".raw-json");
+  if (!toggle || !raw) return;
+  toggle.addEventListener("change", () => {
+    raw.classList.toggle("hidden", !toggle.checked);
+  });
+}
+
+function renderHome() {
+  viewTitle.textContent = "Home";
+  viewContent.innerHTML = `
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      ${[
+        ["Search", "Search entities, items, and timelines.", "search"],
+        ["Ask", "Natural language to jump-start investigations.", "ask"],
+        ["Summary", "Quick overview of activity and partners.", "summary"],
+        ["Storages", "Container inventory with negative highlights.", "storages"],
+        ["Flow", "Trace item and money flows.", "flow"],
+        ["Trace", "Graph-style trace paths.", "trace"],
+        ["Between", "Events connecting two entities.", "between"],
+        ["Reports", "Generate professional case exports.", "reports"],
+      ]
+        .map(
+          ([title, desc, view]) => `
+          <button data-view="${view}" class="tile-card group rounded-2xl border border-orange-700/50 bg-[#2b1111]/70 p-6 text-left transition duration-150 hover:scale-[1.02] hover:border-orange-300/70 hover:shadow-glow">
+            <div class="text-xs uppercase tracking-wide text-slate-400">${view}</div>
+            <div class="mt-3 text-lg font-semibold text-slate-100">${title}</div>
+            <div class="mt-2 text-sm text-slate-300">${desc}</div>
+          </button>
+        `,
+        )
+        .join("")}
+    </div>
+  `;
+  viewContent.querySelectorAll(".tile-card").forEach((btn) => {
+    btn.addEventListener("click", () => setView(btn.dataset.view));
+  });
+}
+
+function renderFormCard(title, bodyHtml, actionLabel = "Run") {
+  return `
+    <div class="rounded-2xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
+      <div class="text-sm uppercase tracking-wide text-slate-400">${title}</div>
+      <div class="mt-4 space-y-4">${bodyHtml}</div>
+      <button class="action-btn mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-orange-400">
+        ${actionLabel}
+      </button>
+    </div>
+  `;
+}
+
+function applyFieldStyles() {
+  viewContent.querySelectorAll(".field").forEach((field) => {
+    field.classList.add(
+      "w-full",
+      "rounded-lg",
+      "border",
+      "border-orange-900/40",
+      "bg-[#1a0b0b]",
+      "px-3",
+      "py-2",
+      "text-sm",
+      "text-slate-200",
+      "placeholder:text-slate-500",
+      "focus:border-orange-400",
+      "focus:outline-none",
+    );
+  });
+}
+
+function renderEntityRequiredEmpty() {
+  renderEmpty("No entity selected.", "Pick a recent entity, or use Search to select one.");
+}
+
+function renderSearchView() {
+  viewTitle.textContent = "Search";
+  const entityValue = state.currentEntity || "";
+  const defaults = {
+    entity: state.searchParams.entity || entityValue,
+    name: state.searchParams.name || "",
+    item: state.searchParams.item || "",
+    type: state.searchParams.type || "",
+    from: state.searchParams.from || "",
+    to: state.searchParams.to || "",
+    limit: state.searchParams.limit || "200",
+  };
+  viewContent.innerHTML = renderFormCard(
+    "Search filters",
+    `
+    <div class="grid gap-4 md:grid-cols-2">
+      <input class="field" placeholder="Entity ID" value="${defaults.entity}" data-field="entity" />
+      <input class="field" placeholder="Name" value="${defaults.name}" data-field="name" />
+      <input class="field" placeholder="Item" value="${defaults.item}" data-field="item" />
+      <input class="field" placeholder="Type (bank_transfer, oferă, etc.)" value="${defaults.type}" data-field="type" />
+      <input class="field" placeholder="From (ISO)" value="${defaults.from}" data-field="from" />
+      <input class="field" placeholder="To (ISO)" value="${defaults.to}" data-field="to" />
+      <input class="field" placeholder="Limit (default 200)" value="${defaults.limit}" data-field="limit" />
+    </div>
+  `,
+  );
+  applyFieldStyles();
+  const actionBtn = viewContent.querySelector(".action-btn");
+  actionBtn.addEventListener("click", async () => {
+    await runSearch(0);
+  });
+}
+
+async function runSearch(offset) {
+  renderLoading("Running search…");
+  const params = Object.keys(state.searchParams).length ? { ...state.searchParams } : {};
+  const freshParams = collectFields();
+  if (Object.keys(freshParams).length) {
+    Object.assign(params, freshParams);
+  }
+  const limit = Number(params.limit || 200);
+  state.searchParams = { ...params, limit: String(limit), offset: String(offset) };
+  const query = new URLSearchParams({ ...params, limit, offset }).toString();
+  const data = await fetchJson(`/search?${query}`);
+  state.lastResponse = data;
+  if (!data.ok) {
+    renderErrorFromResponse(data);
+    attachRawToggle();
+    return;
+  }
+  const rows = data.data?.events || [];
+  if (!rows.length) {
+    renderEmpty("No events returned.", "Adjust filters or pick another entity.");
+    viewContent.innerHTML += renderRawToggle(data);
+    attachRawToggle();
+    return;
+  }
+  const matched = data.data.matched_total ?? 0;
+  const returned = data.data.returned_count ?? rows.length;
+  const currentOffset = data.data.offset ?? offset;
+  const hasNext = returned >= limit;
+  viewContent.innerHTML = `
+    ${renderWarnings(data.warnings)}
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
+        <div>Matched: ${matched}</div>
+        <div>Showing ${currentOffset + 1}–${currentOffset + returned}</div>
+      </div>
+      <div class="overflow-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs uppercase text-slate-400">
+            <tr>
+              <th class="py-2">Timestamp</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Target</th>
+              <th>Item</th>
+              <th>Money</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-200">
+            ${rows
+              .map(
+                (row) => `
+              <tr class="border-t border-orange-900/30">
+                <td class="py-2">${row.ts || "—"}</td>
+                <td>${row.event_type || "—"}</td>
+                <td>${row.src_id || row.src_name || "—"}</td>
+                <td>${row.dst_id || row.dst_name || "—"}</td>
+                <td>${row.item || "—"}</td>
+                <td>${row.money ?? "—"}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex items-center gap-3">
+        <button class="page-btn prev-btn" ${currentOffset <= 0 ? "disabled" : ""}>Previous</button>
+        <button class="page-btn next-btn" ${hasNext ? "" : "disabled"}>Next</button>
+      </div>
+    </div>
+    ${renderRawToggle(data)}
+  `;
+  attachRawToggle();
+  viewContent.querySelectorAll(".page-btn").forEach((btn) => {
+    btn.className =
+      "page-btn rounded-lg border border-orange-900/40 bg-[#1a0b0b] px-4 py-2 text-xs text-slate-200 hover:border-orange-400 disabled:cursor-not-allowed disabled:opacity-50";
+  });
+  const prevBtn = viewContent.querySelector(".prev-btn");
+  const nextBtn = viewContent.querySelector(".next-btn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => runSearch(Math.max(currentOffset - limit, 0)));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => runSearch(currentOffset + limit));
+  }
+}
+
+function renderSummaryView() {
+  viewTitle.textContent = "Summary";
+  const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  viewContent.innerHTML = renderFormCard(
+    "Summary",
+    `
+      <input class="field" placeholder="Entity ID" value="${entityValue}" data-field="entity" />
+  `,
+  );
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Building summary…");
+    const params = collectFields();
+    const data = await fetchJson(`/summary?entity=${encodeURIComponent(params.entity || "")}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const summary = data.data;
+    if (!summary?.events?.length) {
+      renderEmpty("No summary events found.", "Run search or ingest more data.");
+      viewContent.innerHTML += renderRawToggle(data);
+      attachRawToggle();
+      return;
+    }
+    viewContent.innerHTML = `
+      ${renderWarnings(data.warnings)}
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-xs uppercase text-slate-400">Money In</div>
+          <div class="mt-2 text-xl font-semibold">${summary.money_in_formatted || summary.money_in || "—"}</div>
+        </div>
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-xs uppercase text-slate-400">Money Out</div>
+          <div class="mt-2 text-xl font-semibold">${summary.money_out_formatted || summary.money_out || "—"}</div>
+        </div>
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-xs uppercase text-slate-400">Events</div>
+          <div class="mt-2 text-xl font-semibold">${summary.events.length}</div>
+        </div>
+      </div>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-sm text-slate-300">Top Partners</div>
+          <ul class="mt-3 space-y-2 text-sm text-slate-200">
+            ${(summary.top_partners || [])
+              .map(
+                (p) =>
+                  `<li class="flex items-center justify-between"><span>${p.partner_name || p.partner_id}</span><span class="text-slate-400">${p.count}</span></li>`,
+              )
+              .join("")}
+          </ul>
+        </div>
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-sm text-slate-300">Event Counts</div>
+          <ul class="mt-3 space-y-2 text-sm text-slate-200">
+            ${(summary.event_counts || [])
+              .map((c) => `<li class="flex items-center justify-between"><span>${c[0]}</span><span class="text-slate-400">${c[1]}</span></li>`)
+              .join("")}
+          </ul>
+        </div>
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+  });
+}
+
+function renderStoragesView() {
+  viewTitle.textContent = "Storages";
+  const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  viewContent.innerHTML = renderFormCard(
+    "Storage filters",
+    `
+      <div class="grid gap-4 md:grid-cols-2">
+        <input class="field" placeholder="Entity ID" value="${entityValue}" data-field="entity" />
+        <input class="field" placeholder="Container (optional)" data-field="container" />
+        <input class="field" placeholder="From (ISO)" data-field="from" />
+        <input class="field" placeholder="To (ISO)" data-field="to" />
+      </div>
+  `,
+  );
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Loading containers…");
+    const params = collectFields();
+    const query = new URLSearchParams(params).toString();
+    const data = await fetchJson(`/storages?${query}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const containers = data.data?.containers || [];
+    if (!containers.length) {
+      renderEmpty("No storage activity found.", "Try another entity or time range.");
+      viewContent.innerHTML += renderRawToggle(data);
+      attachRawToggle();
+      return;
+    }
+    viewContent.innerHTML = `
+      ${renderWarnings(data.warnings)}
+      <div class="space-y-6">
+        ${containers
+          .map(
+            (c) => `
+            <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+              <div class="flex items-center justify-between">
+                <div class="text-lg font-semibold">${c.container}</div>
+                <div class="text-xs text-slate-400">puts ${c.puts} · removes ${c.removes}</div>
+              </div>
+              <div class="mt-4 overflow-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="text-xs uppercase text-slate-400">
+                    <tr>
+                      <th class="py-2">Item</th>
+                      <th>Current</th>
+                      <th>Total In</th>
+                      <th>Total Out</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${c.items
+                      .map(
+                        (item) => `
+                      <tr class="border-t border-orange-900/30">
+                        <td class="py-2">${item.item}</td>
+                        <td class="${item.current < 0 ? "text-red-300" : "text-slate-200"}">${item.current}</td>
+                        <td class="text-slate-300">${item.total_in}</td>
+                        <td class="text-slate-300">${item.total_out}</td>
+                      </tr>
+                    `,
+                      )
+                      .join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `,
+          )
+          .join("")}
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+  });
+}
+
+function renderFlowView() {
+  viewTitle.textContent = "Flow";
+  const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  viewContent.innerHTML = renderFormCard(
+    "Flow settings",
+    `
+      <div class="grid gap-4 md:grid-cols-2">
+        <input class="field" placeholder="Entity ID" value="${entityValue}" data-field="entity" />
+        <select class="field" data-field="direction">
+          <option value="both">Both</option>
+          <option value="out">Out</option>
+          <option value="in">In</option>
+        </select>
+        <input class="field" placeholder="Depth (default 4)" data-field="depth" />
+        <input class="field" placeholder="Window minutes (default 120)" data-field="window" />
+        <input class="field" placeholder="Item filter" data-field="item" />
+      </div>
+  `,
+  );
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Tracing flow…");
+    const params = collectFields();
+    const query = new URLSearchParams(params).toString();
+    const data = await fetchJson(`/flow?${query}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const chains = data.data?.chains || [];
+    if (!chains.length) {
+      renderEmpty("No flow chains found.", "Try another entity or expand depth.");
+      viewContent.innerHTML += renderRawToggle(data);
+      attachRawToggle();
+      return;
+    }
+    viewContent.innerHTML = `
+      <div class="mb-4 flex gap-3">
+        <button class="export-btn" data-format="json">Export JSON</button>
+        <button class="export-btn" data-format="txt">Export TXT</button>
+      </div>
+      <div class="space-y-4">
+        ${chains
+          .map(
+            (chain) => `
+            <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+              <div class="text-xs uppercase text-slate-400">${chain.direction}</div>
+              <div class="mt-2 text-sm text-slate-200">Steps: ${chain.chain.length}</div>
+            </div>
+          `,
+          )
+          .join("")}
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+    attachExportButtons(data);
+  });
+}
+
+function renderTraceView() {
+  viewTitle.textContent = "Trace";
+  const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  viewContent.innerHTML = renderFormCard(
+    "Trace settings",
+    `
+      <div class="grid gap-4 md:grid-cols-2">
+        <input class="field" placeholder="Entity ID" value="${entityValue}" data-field="entity" />
+        <input class="field" placeholder="Depth (default 2)" data-field="depth" />
+        <input class="field" placeholder="Item filter" data-field="item" />
+      </div>
+  `,
+  );
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Tracing graph…");
+    const params = collectFields();
+    const query = new URLSearchParams(params).toString();
+    const data = await fetchJson(`/trace?${query}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const events = data.data?.events || [];
+    if (!events.length) {
+      renderEmpty("No trace path found.", "Try another entity or increase depth.");
+      viewContent.innerHTML += renderRawToggle(data);
+      attachRawToggle();
+      return;
+    }
+    viewContent.innerHTML = `
+      <div class="mb-4 flex gap-3">
+        <button class="export-btn" data-format="json">Export JSON</button>
+        <button class="export-btn" data-format="txt">Export TXT</button>
+      </div>
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+        <div class="text-sm text-slate-300">Nodes: ${(data.data.nodes || []).length}</div>
+        <ul class="mt-3 space-y-2 text-sm text-slate-200">
+          ${events
+            .slice(0, 20)
+            .map(
+              (e) =>
+                `<li>${e.ts || "—"} · ${e.event_type || "—"} · ${e.src_id || e.src_name || "—"} → ${
+                  e.dst_id || e.dst_name || "—"
+                }</li>`,
+            )
+            .join("")}
+        </ul>
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+    attachExportButtons(data);
+  });
+}
+
+function renderBetweenView() {
+  viewTitle.textContent = "Between";
+  if (!state.currentEntity) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  viewContent.innerHTML = renderFormCard(
+    "Between entities",
+    `
+      <div class="grid gap-4 md:grid-cols-2">
+        <input class="field" placeholder="Entity A" data-field="a" />
+        <input class="field" placeholder="Entity B" data-field="b" />
+        <input class="field" placeholder="From (ISO)" data-field="from" />
+        <input class="field" placeholder="To (ISO)" data-field="to" />
+      </div>
+  `,
+  );
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Finding connections…");
+    const params = collectFields();
+    const query = new URLSearchParams(params).toString();
+    const data = await fetchJson(`/between?${query}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const events = data.data?.events || [];
+    if (!events.length) {
+      renderEmpty("No connecting events found.", "Try another pair or broaden the time range.");
+      viewContent.innerHTML += renderRawToggle(data);
+      attachRawToggle();
+      return;
+    }
+    viewContent.innerHTML = `
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+        <div class="text-sm text-slate-300">Connections: ${data.data.matched_total}</div>
+        <ul class="mt-3 space-y-2 text-sm text-slate-200">
+          ${events
+            .slice(0, 20)
+            .map((e) => `<li>${e.ts || "—"} · ${e.event_type || "—"} · ${e.src_id} → ${e.dst_id}</li>`)
+            .join("")}
+        </ul>
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+  });
+}
+
+function renderAskView(question = "") {
+  viewTitle.textContent = "Ask Phoenix";
+  const emptyNotice = !question
+    ? `
+      <div class="mb-4 rounded-xl border border-orange-400/30 bg-orange-400/10 p-4">
+        <div class="text-sm uppercase tracking-wide text-orange-200">Empty</div>
+        <div class="mt-2 text-lg font-semibold">No question submitted.</div>
+        <div class="mt-1 text-sm text-orange-100/70">Ask Phoenix using the global bar or type a question below.</div>
+      </div>
+    `
+    : "";
+  viewContent.innerHTML = `
+    ${emptyNotice}
+    ${renderFormCard(
+      "Ask Phoenix",
+      `
+        <input class="field" placeholder="Your question" value="${question}" data-field="question" />
+    `,
+      "Ask",
+    )}
+  `;
+  applyFieldStyles();
+  viewContent.querySelector(".action-btn").addEventListener("click", async () => {
+    renderLoading("Analyzing…");
+    const params = collectFields();
+    if (!params.question) {
+      renderEmpty("No question submitted.", "Ask Phoenix using the global bar or type a question below.");
+      return;
+    }
+    const data = await fetchJson(`/ask?q=${encodeURIComponent(params.question || "")}`);
+    state.lastResponse = data;
+    if (!data.ok) {
+      renderErrorFromResponse(data);
+      attachRawToggle();
+      return;
+    }
+    const payload = data.data || {};
+    viewContent.innerHTML = `
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
+        <div class="text-sm uppercase tracking-wide text-slate-400">Answer</div>
+        <div class="mt-3 text-lg font-semibold">Intent: ${payload.intent || "ask"}</div>
+        <div class="mt-2 text-sm text-slate-300">Primary entity: ${payload.pid || "—"}</div>
+      </div>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-sm text-slate-300">Evidence</div>
+          <ul class="mt-3 space-y-2 text-sm text-slate-200">
+            ${(payload.data?.events || [])
+              .slice(0, 8)
+              .map((e) => `<li>${e.ts || "—"} · ${e.event_type || "—"}</li>`)
+              .join("")}
+          </ul>
+        </div>
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+          <div class="text-sm text-slate-300">Suggested next actions</div>
+          <ul class="mt-3 space-y-2 text-sm text-slate-200">
+            ${(payload.data?.nodes || [])
+              .slice(0, 8)
+              .map((n) => `<li>Inspect ${n}</li>`)
+              .join("")}
+          </ul>
+        </div>
+      </div>
+      ${renderRawToggle(data)}
+    `;
+    attachRawToggle();
+  });
+}
+
+function renderReportsView() {
+  viewTitle.textContent = "Reports";
+  if (!state.currentEntity) {
+    renderEntityRequiredEmpty();
+    return;
+  }
+  const placeholder = {
+    ok: true,
+    data: {
+      note: "Report generation is available via CLI. UI export workflows are coming soon.",
+    },
+  };
+  viewContent.innerHTML = `
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
+      <div class="text-sm uppercase tracking-wide text-slate-400">Reports</div>
+      <div class="mt-3 text-lg font-semibold">Professional exports</div>
+      <div class="mt-2 text-sm text-slate-300">
+        Generate case files via <span class="text-orange-300">report &lt;id&gt;</span> in the CLI. This UI will add
+        download options in a future release.
+      </div>
+    </div>
+    ${renderRawToggle(placeholder)}
+  `;
+  attachRawToggle();
+}
+
+function collectFields() {
+  const fields = viewContent.querySelectorAll(".field");
+  const params = {};
+  fields.forEach((field) => {
+    const key = field.dataset.field;
+    if (!key) return;
+    const value = field.value.trim();
+    if (value) {
+      params[key] = value;
+    }
+  });
+  return params;
+}
+
+function attachExportButtons(data) {
+  viewContent.querySelectorAll(".export-btn").forEach((btn) => {
+    btn.className =
+      "export-btn rounded-lg border border-orange-900/40 bg-[#1a0b0b] px-3 py-2 text-xs text-slate-200 hover:border-orange-400";
+    btn.addEventListener("click", () => {
+      const format = btn.dataset.format;
+      const payload = format === "txt" ? JSON.stringify(data.data, null, 2) : JSON.stringify(data, null, 2);
+      const blob = new Blob([payload], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `phoenix_${state.currentView}.${format === "txt" ? "txt" : "json"}`;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+  });
+}
 
 function setView(view) {
-  state.view = view;
-  const cfg = viewConfig[view] || viewConfig.search;
-  viewTitle.textContent = cfg.title;
-  viewHelp.textContent = cfg.help;
-  renderControls();
-  renderEmpty();
-}
-
-function renderControls() {
-  controls.innerHTML = "";
-  const card = document.getElementById("card-template").content.firstElementChild.cloneNode(true);
-  card.classList.add("grid", "gap-3");
-
-  if (state.view === "ask") {
-    const textarea = document.createElement("textarea");
-    textarea.placeholder = "Ask a question, e.g. 'Show summary for ID 101'";
-    textarea.className = "rounded-lg bg-slate-900 border border-slate-700 px-3 py-3 h-28";
-    textarea.id = "ask-input";
-
-    const actionBtn = document.createElement("button");
-    actionBtn.textContent = "Ask";
-    actionBtn.className = "bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-2";
-    actionBtn.addEventListener("click", () => loadView());
-
-    card.appendChild(textarea);
-    card.appendChild(actionBtn);
-  } else {
-    const entityInput = document.createElement("input");
-    entityInput.placeholder = "Entity ID";
-    entityInput.value = state.entity || "";
-    entityInput.className = "rounded-lg bg-slate-900 border border-slate-700 px-3 py-2";
-    entityInput.addEventListener("change", (e) => {
-      state.entity = e.target.value || null;
-    });
-
-    const actionBtn = document.createElement("button");
-    actionBtn.textContent = "Run";
-    actionBtn.className = "bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-2";
-    actionBtn.addEventListener("click", () => loadView());
-
-    card.appendChild(entityInput);
-    card.appendChild(actionBtn);
+  state.currentView = view;
+  switch (view) {
+    case "home":
+      renderHome();
+      break;
+    case "search":
+      renderSearchView();
+      break;
+    case "summary":
+      renderSummaryView();
+      break;
+    case "storages":
+      renderStoragesView();
+      break;
+    case "flow":
+      renderFlowView();
+      break;
+    case "trace":
+      renderTraceView();
+      break;
+    case "between":
+      renderBetweenView();
+      break;
+    case "reports":
+      renderReportsView();
+      break;
+    case "ask":
+      renderAskView();
+      break;
+    default:
+      renderHome();
   }
-  controls.appendChild(card);
 }
 
-function renderEmpty(message = "Try refining your filters or pick a recent entity.") {
-  results.innerHTML = "";
-  const empty = document.getElementById("empty-state-template").content.firstElementChild.cloneNode(true);
-  empty.querySelector("p").textContent = message;
-  results.appendChild(empty);
-}
-
-function renderCard(title, bodyHtml) {
-  const card = document.getElementById("card-template").content.firstElementChild.cloneNode(true);
-  card.innerHTML = `<h3 class="text-lg font-semibold">${title}</h3><div class="text-sm text-slate-200 mt-2 font-mono">${bodyHtml}</div>`;
-  results.appendChild(card);
-}
-
-function renderLoading() {
-  results.innerHTML = "";
-  const loading = document.getElementById("loading-template").content.firstElementChild.cloneNode(true);
-  results.appendChild(loading);
-}
-
-function renderAlert(error) {
-  results.innerHTML = "";
-  const alert = document.getElementById("alert-template").content.firstElementChild.cloneNode(true);
-  alert.querySelector("#alert-title").textContent = error.message || "Something went wrong";
-  alert.querySelector("#alert-message").textContent = error.hint || "Try again.";
-  const details = alert.querySelector("#alert-details");
-  const toggle = alert.querySelector("#alert-toggle");
-  if (error.details) {
-    details.textContent = error.details;
-  } else {
-    toggle.classList.add("hidden");
+function updateRecentEntities() {
+  if (!state.recentEntities.length) {
+    recentEntitiesEl.innerHTML = `<div class="text-slate-500">No recent entities.</div>`;
+    return;
   }
-  toggle.addEventListener("click", () => {
-    details.classList.toggle("hidden");
-    toggle.textContent = details.classList.contains("hidden") ? "Show details" : "Hide details";
-  });
-  results.appendChild(alert);
-}
+  recentEntitiesEl.innerHTML = state.recentEntities
+    .map(
+      (e) => `
+      <button class="entity-btn w-full rounded-lg border border-orange-900/40 bg-[#2b1111]/60 px-3 py-2 text-left text-xs text-slate-200 hover:border-orange-300" data-entity="${e.player_id}">
+        <div class="font-semibold">${e.player_id}</div>
+        <div class="text-[11px] text-slate-400">${e.name || "Unknown"} · ${e.last_seen || "—"}</div>
+      </button>
+    `,
+    )
+    .join("");
 
-function renderBanner(message) {
-  banner.innerHTML = "";
-  if (!message) return;
-  const card = document.getElementById("card-template").content.firstElementChild.cloneNode(true);
-  card.classList.add("border-amber-500/30", "text-amber-200");
-  card.innerHTML = `<div class="font-semibold">Notice</div><div class="text-sm mt-1">${message}</div>`;
-  banner.appendChild(card);
-}
-
-async function loadRecent() {
-  const data = await api("/entities?limit=6");
-  recentEntities.innerHTML = "";
-  data.data.entities.forEach((ent) => {
-    const btn = document.createElement("button");
-    btn.className = "w-full text-left px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700";
-    btn.textContent = `${ent.name || "UNKNOWN"} [${ent.player_id}]`;
+  recentEntitiesEl.querySelectorAll(".entity-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      state.entity = ent.player_id;
-      globalSearch.value = ent.player_id;
-      loadView();
+      state.currentEntity = btn.dataset.entity;
+      setView("summary");
     });
-    recentEntities.appendChild(btn);
   });
 }
 
-async function loadView() {
-  renderLoading();
-  renderBanner("");
-  if (!state.entity && state.view !== "between" && state.view !== "ask") {
-    renderEmpty();
-    return;
-  }
+async function boot() {
+  document.querySelectorAll(".sidebar-btn").forEach((btn) => {
+    btn.className =
+      "sidebar-btn w-full rounded-lg border border-transparent px-3 py-2 text-left text-sm text-slate-300 hover:border-orange-900/40 hover:bg-[#2b1111]";
+    btn.addEventListener("click", () => setView(btn.dataset.view));
+  });
 
-  if (state.view === "summary") {
-    const data = await api(`/summary?entity=${state.entity}`);
+  globalAskBtn.addEventListener("click", () => {
+    const q = globalAskInput.value.trim();
+    state.currentView = "ask";
+    renderAskView(q);
+  });
+
+  buildBtn.addEventListener("click", async () => {
+    buildBtn.disabled = true;
+    buildBtn.textContent = "Building…";
+    const data = await fetchJson("/build", { method: "POST" });
     if (!data.ok) {
-      if (data.error?.code === "EMPTY_DB") {
-        renderBanner("DB not built. Click Build DB to run normalize + parse.");
-      }
-      renderAlert(data.error || {});
-      return;
-    }
-    if (!data.data.events || data.data.events.length === 0) {
-      renderEmpty("No summary results. Try a different entity.");
-      return;
-    }
-    renderCard("Summary", JSON.stringify(data.data, null, 2));
-    return;
-  }
-
-  if (state.view === "storages") {
-    const data = await api(`/storages?entity=${state.entity}`);
-    if (!data.ok) {
-      if (data.error?.code === "EMPTY_DB") {
-        renderBanner("DB not built. Click Build DB to run normalize + parse.");
-      }
-      renderAlert(data.error || {});
-      return;
-    }
-    if (!data.data.containers || data.data.containers.length === 0) {
-      renderEmpty("No storage results. Try a different entity.");
-      return;
-    }
-    renderCard("Storages", JSON.stringify(data.data, null, 2));
-    return;
-  }
-
-  if (state.view === "flow") {
-    const data = await api(`/flow?entity=${state.entity}`);
-    if (!data.ok) {
-      if (data.error?.code === "EMPTY_DB") {
-        renderBanner("DB not built. Click Build DB to run normalize + parse.");
-      }
-      renderAlert(data.error || {});
-      return;
-    }
-    if (!data.data.chains || data.data.chains.length === 0) {
-      renderEmpty("No flow results. Try a different entity.");
-      return;
-    }
-    renderCard("Flow", JSON.stringify(data.data, null, 2));
-    return;
-  }
-
-  if (state.view === "trace") {
-    const data = await api(`/trace?entity=${state.entity}`);
-    if (!data.ok) {
-      if (data.error?.code === "EMPTY_DB") {
-        renderBanner("DB not built. Click Build DB to run normalize + parse.");
-      }
-      renderAlert(data.error || {});
-      return;
-    }
-    if (!data.data.events || data.data.events.length === 0) {
-      renderEmpty("No trace results. Try a different entity.");
-      return;
-    }
-    renderCard("Trace", JSON.stringify(data.data, null, 2));
-    return;
-  }
-
-  if (state.view === "between") {
-    renderCard("Between", "Enter two entities in the global search separated by comma.");
-    return;
-  }
-
-  if (state.view === "reports") {
-    renderCard("Reports", "Use CLI: report <id> to generate report packs.");
-    return;
-  }
-
-  if (state.view === "ask") {
-    const question = document.getElementById("ask-input")?.value?.trim() || "";
-    const data = await api(`/ask?q=${encodeURIComponent(question)}`);
-    if (!data.ok) {
-      if (data.error?.code === "EMPTY_DB") {
-        renderBanner("DB not built. Click Build DB to run normalize + parse.");
-      }
-      renderAlert(data.error || {});
-      return;
-    }
-    renderCard("Answer", data.data.answer || "No answer available.");
-
-    const evidence = data.data.evidence || [];
-    if (evidence.length === 0) {
-      renderCard("Evidence", "No evidence returned. Try a narrower question.");
+      setStatus("Build failed", "error");
+      renderErrorFromResponse(data);
+      attachRawToggle();
     } else {
-      renderCard("Evidence", JSON.stringify(evidence, null, 2));
+      setStatus("DB rebuilt", "ok");
     }
+    buildBtn.disabled = false;
+    buildBtn.textContent = "Build DB";
+  });
 
-    const suggested = data.data.suggested_entities || [];
-    const primary = data.data.primary_entity || null;
-    const suggestedCard = document.getElementById("card-template").content.firstElementChild.cloneNode(true);
-    suggestedCard.innerHTML = `<h3 class="text-lg font-semibold">Suggested Actions</h3>`;
-    const list = document.createElement("div");
-    list.className = "mt-3 flex flex-wrap gap-2";
-    suggested.slice(0, 6).forEach((entity) => {
-      const btn = document.createElement("button");
-      btn.className = "bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm hover:bg-slate-700";
-      btn.textContent = `Open ${entity}`;
-      btn.addEventListener("click", () => {
-        state.entity = String(entity);
-        globalSearch.value = String(entity);
-        setView("summary");
-        loadView();
-      });
-      list.appendChild(btn);
-    });
-    const flowBtn = document.createElement("button");
-    flowBtn.className = "bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-2 text-sm";
-    flowBtn.textContent = "Run flow";
-    flowBtn.addEventListener("click", () => {
-      if (!state.entity) {
-        state.entity = primary || suggested[0] || null;
-        globalSearch.value = state.entity || "";
-      }
-      setView("flow");
-      loadView();
-    });
-    const summaryBtn = document.createElement("button");
-    summaryBtn.className = "bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-2 text-sm";
-    summaryBtn.textContent = "Run summary";
-    summaryBtn.addEventListener("click", () => {
-      if (!state.entity) {
-        state.entity = primary || suggested[0] || null;
-        globalSearch.value = state.entity || "";
-      }
-      setView("summary");
-      loadView();
-    });
-    list.appendChild(flowBtn);
-    list.appendChild(summaryBtn);
-    suggestedCard.appendChild(list);
-    results.appendChild(suggestedCard);
-    return;
+  const health = await fetchJson("/health");
+  if (health.ok) {
+    setStatus("API connected", "ok");
+  } else {
+    setStatus("API offline", "error");
   }
 
-  const data = await api(`/events?entity=${state.entity}&limit=100`);
-  if (!data.ok) {
-    if (data.error?.code === "EMPTY_DB") {
-      renderBanner("DB not built. Click Build DB to run normalize + parse.");
-    }
-    renderAlert(data.error || {});
-    return;
+  const entities = await fetchJson("/entities?limit=8");
+  if (entities.ok) {
+    state.recentEntities = entities.data?.entities || [];
+  } else {
+    state.recentEntities = [];
   }
-  if (!data.data.events || data.data.events.length === 0) {
-    renderEmpty("No events returned. Try a different entity or filters.");
-    return;
-  }
-  renderCard("Events", JSON.stringify(data.data, null, 2));
-  await loadRecent();
+  updateRecentEntities();
+  renderHome();
 }
 
-async function init() {
-  const health = await api("/health");
-  document.getElementById("db-status").textContent = health.ok ? "DB: ready" : "DB: unavailable";
-  await loadRecent();
-  renderControls();
-  renderEmpty();
-}
-
-Array.from(document.querySelectorAll("[data-view]")).forEach((btn) => {
-  btn.addEventListener("click", () => setView(btn.dataset.view));
-});
-
-Array.from(document.querySelectorAll(".tab-btn")).forEach((btn) => {
-  btn.addEventListener("click", () => setView(btn.dataset.tab));
-});
-
-const searchBtn = document.getElementById("search-btn");
-searchBtn.addEventListener("click", () => {
-  const val = globalSearch.value.trim();
-  if (val.includes(",")) {
-    const [a, b] = val.split(",").map((x) => x.trim());
-    if (a && b) {
-      state.view = "between";
-      renderLoading();
-      api(`/between?a=${a}&b=${b}&limit=200`).then((data) => {
-        if (!data.ok) {
-          if (data.error?.code === "EMPTY_DB") {
-            renderBanner("DB not built. Click Build DB to run normalize + parse.");
-          }
-          renderAlert(data.error || {});
-          return;
-        }
-        renderCard("Between", JSON.stringify(data.data, null, 2));
-      });
-      return;
-    }
-  }
-  state.entity = val || null;
-  loadView();
-});
-
-document.getElementById("refresh-btn").addEventListener("click", () => loadView());
-
-document.getElementById("build-btn").addEventListener("click", async () => {
-  renderLoading();
-  const data = await api("/build", { method: "POST" });
-  if (!data.ok) {
-    renderAlert(data.error || {});
-    return;
-  }
-  renderCard("Build Complete", JSON.stringify(data.data, null, 2));
-  await loadRecent();
-});
-
-globalSearch.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    searchBtn.click();
-  }
-});
-
-init();
+boot();
