@@ -3,13 +3,13 @@ from datetime import datetime, timezone
 from rich.console import Console
 from rich.panel import Panel
 
-from .db import get_db
+from .db import get_conn
 from .util import sha1_text, utc_now_iso
 
 console = Console()
 
 
-def load_logs(path: str):
+def load_logs(path: str, silent: bool = False):
     """
     Stage 1: RAW INGESTION
     - Accepts a file OR a directory
@@ -21,7 +21,8 @@ def load_logs(path: str):
     p = Path(path)
 
     if not p.exists():
-        console.print(f"[red]Path not found:[/red] {path}")
+        if not silent:
+            console.print(f"[red]Path not found:[/red] {path}")
         return 0
 
     # Resolve files deterministically
@@ -31,57 +32,59 @@ def load_logs(path: str):
         files = sorted(p.rglob("*.txt"))
 
     if not files:
-        console.print("[yellow]No .txt log files found.[/yellow]")
+        if not silent:
+            console.print("[yellow]No .txt log files found.[/yellow]")
         return 0
-
-    conn = get_db()
-    cur = conn.cursor()
 
     inserted = 0
     skipped = 0
 
-    for f in files:
-        try:
-            text = f.read_text(encoding="utf-8", errors="ignore")
-        except Exception as e:
-            console.print(f"[red]Failed to read[/red] {f}: {e}")
-            continue
+    with get_conn() as conn:
+        cur = conn.cursor()
 
-        h = sha1_text(text)
+        for f in files:
+            try:
+                text = f.read_text(encoding="utf-8", errors="ignore")
+            except Exception as e:
+                if not silent:
+                    console.print(f"[red]Failed to read[/red] {f}: {e}")
+                continue
 
-        # Deduplication by content hash (evidence safety)
-        exists = cur.execute(
-            "SELECT 1 FROM raw_logs WHERE content_hash=?",
-            (h,),
-        ).fetchone()
+            h = sha1_text(text)
 
-        if exists:
-            skipped += 1
-            continue
+            # Deduplication by content hash (evidence safety)
+            exists = cur.execute(
+                "SELECT 1 FROM raw_logs WHERE content_hash=?",
+                (h,),
+            ).fetchone()
 
-        cur.execute(
-            """
-            INSERT INTO raw_logs
-            (source_file, content, content_hash, loaded_at)
-            VALUES (?,?,?,?)
-            """,
-            (
-                str(f),
-                text,
-                h,
-                utc_now_iso(),
-            ),
+            if exists:
+                skipped += 1
+                continue
+
+            cur.execute(
+                """
+                INSERT INTO raw_logs
+                (source_file, content, content_hash, loaded_at)
+                VALUES (?,?,?,?)
+                """,
+                (
+                    str(f),
+                    text,
+                    h,
+                    utc_now_iso(),
+                ),
+            )
+            inserted += 1
+
+        conn.commit()
+
+    if not silent:
+        console.print(
+            Panel(
+                f"Files loaded: {inserted}\nDuplicates skipped: {skipped}",
+                title="RAW INGEST",
+            )
         )
-        inserted += 1
-
-    conn.commit()
-    conn.close()
-
-    console.print(
-        Panel(
-            f"Files loaded: {inserted}\nDuplicates skipped: {skipped}",
-            title="RAW INGEST",
-        )
-    )
 
     return inserted

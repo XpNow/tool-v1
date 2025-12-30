@@ -14,6 +14,7 @@ def search_events(
     max_money=None,
     ts_from: str | None = None,
     ts_to: str | None = None,
+    limit: int = 500,
 ):
     return repo_search_events(
         ids=ids,
