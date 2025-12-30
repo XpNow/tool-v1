@@ -209,63 +209,66 @@ def run_command(command: str, params: dict[str, Any] | None = None) -> dict[str,
             return build_response(cmd, search_params, data, warnings=warnings)
 
         if cmd == "summary":
-            pid = params.get("id") or params.get("entity") or params.get("pid")
-            if not pid:
+            entity = params.get("entity")
+            if not entity or not str(entity).strip():
                 return _error("summary", params, "VALIDATION", "Missing entity.", "Provide an entity id.")
-            empty = _ensure_events("summary", {"id": pid})
+            entity = str(entity).strip()
+            empty = _ensure_events("summary", {"entity": entity})
             if empty:
                 return empty
-            data = core_commands.summary(str(pid), collapse=params.get("collapse"))
+            data = core_commands.summary(entity, collapse=params.get("collapse"))
             warnings = _as_warnings(data.pop("warnings", []))
             if not data.get("events"):
-                return _error("summary", {"id": pid}, "NOT_FOUND", "No summary data found.", "Try Search first.")
+                return _error("summary", {"entity": entity}, "NOT_FOUND", "No summary data found.", "Try Search first.")
             return build_response(
                 "summary",
-                {"id": str(pid), "collapse": params.get("collapse")},
+                {"entity": entity, "collapse": params.get("collapse")},
                 data,
                 warnings=warnings,
             )
 
         if cmd == "storages":
-            pid = params.get("id") or params.get("entity") or params.get("pid")
-            if not pid:
+            entity = params.get("entity")
+            if not entity or not str(entity).strip():
                 return _error("storages", params, "VALIDATION", "Missing entity.", "Provide an entity id.")
-            empty = _ensure_events("storages", {"id": pid})
+            entity = str(entity).strip()
+            empty = _ensure_events("storages", {"entity": entity})
             if empty:
                 return empty
             data = core_commands.storages(
-                str(pid),
+                entity,
                 params.get("container"),
                 params.get("from") or params.get("ts_from"),
                 params.get("to") or params.get("ts_to"),
             )
             warnings = _as_warnings(data.pop("warnings", []))
             if not data.get("containers"):
-                return _error("storages", {"id": pid}, "NOT_FOUND", "No storage data found.", "Try Search first.")
+                return _error("storages", {"entity": entity}, "NOT_FOUND", "No storage data found.", "Try Search first.")
             return build_response(
                 "storages",
-                {"id": str(pid), "container": params.get("container"), "from": params.get("from"), "to": params.get("to")},
+                {"entity": entity, "container": params.get("container"), "from": params.get("from"), "to": params.get("to")},
                 data,
                 warnings=warnings,
             )
 
         if cmd == "flow":
-            pid = params.get("id") or params.get("entity") or params.get("pid")
-            if not pid:
+            entity = params.get("entity")
+            if not entity or not str(entity).strip():
                 return _error("flow", params, "VALIDATION", "Missing entity.", "Provide an entity id.")
-            empty = _ensure_events("flow", {"id": pid})
+            entity = str(entity).strip()
+            empty = _ensure_events("flow", {"entity": entity})
             if empty:
                 return empty
             direction = params.get("direction") or params.get("dir") or "both"
             depth = _normalize_limit(params.get("depth"), 4)
             window = _normalize_limit(params.get("window"), 120)
             item = params.get("item")
-            data = core_commands.flow(str(pid), direction=direction, depth=depth, window=window, item=item)
+            data = core_commands.flow(entity, direction=direction, depth=depth, window=window, item=item)
             if not data.get("chains"):
-                return _error("flow", {"id": pid}, "NOT_FOUND", "No flow data found.", "Try Search first.")
+                return _error("flow", {"entity": entity}, "NOT_FOUND", "No flow data found.", "Try Search first.")
             return build_response(
                 "flow",
-                {"id": str(pid), "direction": direction, "depth": depth, "window": window, "item": item},
+                {"entity": entity, "direction": direction, "depth": depth, "window": window, "item": item},
                 data,
             )
 
