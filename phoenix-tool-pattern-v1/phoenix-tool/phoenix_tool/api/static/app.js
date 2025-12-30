@@ -254,7 +254,10 @@ async function runSearch(offset) {
   const matched = data.data.matched_total ?? 0;
   const returned = data.data.returned_count ?? rows.length;
   const currentOffset = data.data.offset ?? offset;
-  const hasNext = returned >= limit;
+  const nextOffset = data.data.next_offset ?? null;
+  const prevOffset = data.data.prev_offset ?? null;
+  const hasNext = nextOffset !== null;
+  const hasPrev = prevOffset !== null;
   viewContent.innerHTML = `
     ${renderWarnings(data.warnings)}
     <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
@@ -271,6 +274,7 @@ async function runSearch(offset) {
               <th>Source</th>
               <th>Target</th>
               <th>Item</th>
+              <th>Qty</th>
               <th>Money</th>
             </tr>
           </thead>
@@ -284,6 +288,7 @@ async function runSearch(offset) {
                 <td>${row.src_id || row.src_name || "—"}</td>
                 <td>${row.dst_id || row.dst_name || "—"}</td>
                 <td>${row.item || "—"}</td>
+                <td>${row.qty ?? "—"}</td>
                 <td>${row.money ?? "—"}</td>
               </tr>
             `,
@@ -293,7 +298,7 @@ async function runSearch(offset) {
         </table>
       </div>
       <div class="mt-4 flex items-center gap-3">
-        <button class="page-btn prev-btn" ${currentOffset <= 0 ? "disabled" : ""}>Previous</button>
+        <button class="page-btn prev-btn" ${hasPrev ? "" : "disabled"}>Previous</button>
         <button class="page-btn next-btn" ${hasNext ? "" : "disabled"}>Next</button>
       </div>
     </div>
@@ -307,10 +312,18 @@ async function runSearch(offset) {
   const prevBtn = viewContent.querySelector(".prev-btn");
   const nextBtn = viewContent.querySelector(".next-btn");
   if (prevBtn) {
-    prevBtn.addEventListener("click", () => runSearch(Math.max(currentOffset - limit, 0)));
+    prevBtn.addEventListener("click", () => {
+      if (hasPrev) {
+        runSearch(prevOffset);
+      }
+    });
   }
   if (nextBtn) {
-    nextBtn.addEventListener("click", () => runSearch(currentOffset + limit));
+    nextBtn.addEventListener("click", () => {
+      if (hasNext) {
+        runSearch(nextOffset);
+      }
+    });
   }
 }
 
