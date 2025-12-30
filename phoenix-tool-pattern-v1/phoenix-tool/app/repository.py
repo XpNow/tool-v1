@@ -124,6 +124,7 @@ def search_events(
     ts_from: str | None = None,
     ts_to: str | None = None,
     limit: int = 500,
+    offset: int = 0,
 ) -> list[Event]:
     sql, params = build_search_query(
         ids=ids,
@@ -136,8 +137,9 @@ def search_events(
         ts_from=ts_from,
         ts_to=ts_to,
     )
-    sql += " ORDER BY (ts IS NULL) ASC, ts ASC, id ASC LIMIT ?"
+    sql += " ORDER BY (ts IS NULL) ASC, ts ASC, id ASC LIMIT ? OFFSET ?"
     params.append(int(limit))
+    params.append(int(offset))
     return _fetch_events(sql, params)
 
 

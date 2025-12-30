@@ -15,6 +15,7 @@ def search_events(
     ts_from: str | None = None,
     ts_to: str | None = None,
     limit: int = 500,
+    offset: int = 0,
 ):
     return repo_search_events(
         ids=ids,
@@ -27,6 +28,7 @@ def search_events(
         ts_from=ts_from,
         ts_to=ts_to,
         limit=limit,
+        offset=offset,
     )
 
 

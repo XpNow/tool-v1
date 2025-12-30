@@ -6,36 +6,36 @@
     <title>Phoenix Investigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-slate-900 text-slate-100">
+  <body class="bg-[#1a0b0b] text-slate-100">
     <div class="min-h-screen flex flex-col">
-      <header class="sticky top-0 z-40 border-b border-slate-800 bg-slate-900/90 backdrop-blur">
+      <header class="sticky top-0 z-40 border-b border-amber-900/40 bg-[#1a0b0b]/90 backdrop-blur">
         <div class="mx-auto flex max-w-7xl items-center gap-6 px-6 py-4">
           <div class="flex items-center gap-2 text-lg font-semibold">
-            <span class="text-amber-400">Phoenix</span>
+            <span class="text-orange-400">Phoenix</span>
             <span>Investigation</span>
           </div>
           <div class="flex flex-1 items-center justify-center">
             <div class="flex w-full max-w-xl items-center gap-3">
               <input
                 id="global-ask-input"
-                class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none"
+                class="w-full rounded-lg border border-amber-900/40 bg-[#2b1111] px-4 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-orange-400 focus:outline-none"
                 placeholder="Ask Phoenix… e.g. ‘What did Stefan do yesterday?’"
               />
               <button
                 id="global-ask-btn"
-                class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400"
+                class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-orange-400"
               >
                 Ask
               </button>
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <span id="db-status" class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+            <span id="db-status" class="rounded-full border border-amber-900/50 px-3 py-1 text-xs text-slate-300">
               Checking API…
             </span>
             <button
               id="build-db-btn"
-              class="rounded-lg border border-amber-400/60 bg-slate-800 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-300 hover:text-amber-100"
+              class="rounded-lg border border-orange-400/60 bg-[#2b1111] px-3 py-2 text-xs font-semibold text-orange-200 hover:border-orange-300 hover:text-orange-100"
             >
               Build DB
             </button>
@@ -44,7 +44,7 @@
       </header>
 
       <div class="flex flex-1">
-        <aside class="w-72 border-r border-slate-800 bg-slate-900 px-5 py-6">
+        <aside class="w-72 border-r border-amber-900/30 bg-[#1a0b0b] px-5 py-6">
           <div class="mb-6">
             <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Recent Entities</h2>
             <div id="recent-entities" class="space-y-2 text-sm text-slate-200">

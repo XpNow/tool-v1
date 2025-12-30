@@ -3,12 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Body, FastAPI, Query
+from fastapi import Body, FastAPI, Query, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from phoenix_tool.core.runner import run_command
+from phoenix_tool.core.response import ErrorItem, build_response
 
 app = FastAPI(title="Phoenix Investigation API")
 
@@ -22,6 +25,47 @@ app.add_middleware(
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+def _format_validation_details(exc: RequestValidationError) -> str:
+    parts = []
+    for err in exc.errors():
+        loc = ".".join(str(p) for p in err.get("loc", []))
+        msg = err.get("msg", "Invalid input")
+        parts.append(f"{loc}: {msg}")
+    return "; ".join(parts) or "Validation error"
+
+
+def _api_error(request: Request, code: str, message: str, hint: str, details: str | None = None, status: int = 400):
+    params = {
+        "path": request.url.path,
+        "method": request.method,
+        "query": dict(request.query_params),
+    }
+    payload = build_response(
+        command="api",
+        params=params,
+        data=None,
+        warnings=[],
+        ok=False,
+        error=ErrorItem(code=code, message=message, hint=hint, details=details),
+    )
+    return JSONResponse(payload, status_code=status)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    details = _format_validation_details(exc)
+    return _api_error(request, "VALIDATION", "Validation error.", "Check required fields and retry.", details, status=422)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return _api_error(request, "INTERNAL", "Request failed.", "Check inputs and retry.", str(exc.detail), status=exc.status_code)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return _api_error(request, "INTERNAL", "Unexpected server error.", "Check server logs and retry.", str(exc), status=500)
 
 
 @app.get("/health")
@@ -47,6 +91,7 @@ async def search(
     item: Optional[str] = None,
     event_type: Optional[str] = Query(default=None, alias="type"),
     limit: int = 200,
+    offset: int = 0,
     min_money: Optional[int] = Query(default=None, alias="min$"),
     max_money: Optional[int] = Query(default=None, alias="max$"),
     from_ts: Optional[str] = Query(default=None, alias="from"),
@@ -58,6 +103,7 @@ async def search(
         "item": item,
         "event_type": event_type,
         "limit": limit,
+        "offset": offset,
         "min_money": min_money,
         "max_money": max_money,
         "from": from_ts,

@@ -78,6 +78,7 @@ def _normalize_search_params(params: dict[str, Any]) -> dict[str, Any]:
         "ts_from": params.get("ts_from") or params.get("from") or params.get("start") or params.get("since"),
         "ts_to": params.get("ts_to") or params.get("to") or params.get("end") or params.get("until"),
         "limit": _normalize_limit(params.get("limit"), 500),
+        "offset": _normalize_limit(params.get("offset"), 0),
         "collapse": params.get("collapse"),
     }
 
@@ -197,7 +198,7 @@ def run_command(command: str, params: dict[str, Any] | None = None) -> dict[str,
                 return empty
             data = core_commands.search(search_params)
             warnings = _as_warnings(data.pop("warnings", []))
-            if data.get("matched", 0) == 0:
+            if data.get("matched_total", 0) == 0:
                 return _error(cmd, search_params, "NOT_FOUND", "No events found.", "Adjust filters or ingest more data.")
             return build_response(cmd, search_params, data, warnings=warnings)
 

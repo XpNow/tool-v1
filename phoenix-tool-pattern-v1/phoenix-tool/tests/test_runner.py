@@ -40,7 +40,7 @@ def test_runner_search_limit(loaded_db):
     payload = run_command("search", {"ids": ["101"], "limit": 1})
     _assert_schema(payload)
     assert payload["ok"] is True
-    assert len(payload["data"]["events"]) <= 1
+    assert payload["data"]["returned_count"] <= 1
 
 
 def test_runner_build_twice(temp_db):
@@ -50,3 +50,10 @@ def test_runner_build_twice(temp_db):
     _assert_schema(second)
     assert first["ok"] is True
     assert second["ok"] is True
+
+
+def test_runner_search_offset(loaded_db):
+    payload = run_command("search", {"ids": ["101"], "limit": 1, "offset": 1})
+    _assert_schema(payload)
+    assert payload["ok"] is True
+    assert payload["data"]["offset"] == 1

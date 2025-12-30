@@ -349,6 +349,7 @@ def main(argv=None):
                 "ts_from": kv.get("from") or kv.get("start") or kv.get("since"),
                 "ts_to": kv.get("to") or kv.get("end") or kv.get("until"),
                 "limit": int(kv.get("limit", "500")),
+                "offset": int(kv.get("offset", "0")),
                 "collapse": kv.get("collapse", "smart"),
             }
             return emit_response(run_command("search", params))

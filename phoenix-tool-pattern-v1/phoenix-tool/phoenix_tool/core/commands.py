@@ -60,6 +60,7 @@ def search(params: dict[str, Any]) -> dict[str, Any]:
         ts_from=params.get("ts_from"),
         ts_to=params.get("ts_to"),
         limit=params.get("limit", 500),
+        offset=params.get("offset", 0),
     )
     matched = count_search_events(
         ids=params.get("ids"),
@@ -75,10 +76,17 @@ def search(params: dict[str, Any]) -> dict[str, Any]:
     warnings = warnings_from_lines(count_warnings(rows))
     collapse = params.get("collapse")
     evidence = collapse_events(rows, collapse)
+    returned_count = len(evidence)
+    limit = params.get("limit", 500)
+    offset = params.get("offset", 0)
+    next_offset = offset + returned_count if returned_count == limit else None
     return {
         "events": to_dict(evidence),
-        "matched": matched,
-        "limit": params.get("limit", 500),
+        "matched_total": matched,
+        "returned_count": returned_count,
+        "limit": limit,
+        "offset": offset,
+        "next_offset": next_offset,
         "warnings": warnings,
     }
 

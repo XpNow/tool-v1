@@ -41,6 +41,16 @@ def test_search_empty_db(temp_db):
     assert payload["error"]["code"] == "EMPTY_DB"
 
 
+def test_summary_validation_error():
+    client = TestClient(app)
+    resp = client.get("/summary")
+    assert resp.status_code == 422
+    payload = resp.json()
+    _assert_schema(payload)
+    assert payload["ok"] is False
+    assert payload["error"]["code"] == "VALIDATION"
+
+
 def test_summary_loaded_db(loaded_db):
     client = TestClient(app)
     resp = client.get("/summary?entity=101")

@@ -3,6 +3,7 @@ const state = {
   currentEntity: null,
   recentEntities: [],
   lastResponse: null,
+  searchParams: {},
 };
 
 const viewTitle = document.getElementById("view-title");
@@ -19,7 +20,7 @@ function setStatus(text, tone) {
     tone === "ok"
       ? "border-emerald-400/40 text-emerald-200"
       : tone === "warn"
-      ? "border-amber-400/40 text-amber-200"
+      ? "border-orange-400/40 text-orange-200"
       : "border-red-500/50 text-red-300"
   }`;
 }
@@ -44,7 +45,7 @@ async function fetchJson(url, options = {}) {
 
 function renderLoading(message = "Loading…") {
   viewContent.innerHTML = `
-    <div class="rounded-xl border border-slate-800 bg-slate-800/60 p-6 text-slate-300">
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/60 p-6 text-slate-300">
       ${message}
     </div>
   `;
@@ -64,12 +65,28 @@ function renderError(error) {
   `;
 }
 
+function renderErrorFromResponse(data) {
+  if (data?.error) {
+    renderError(data.error);
+    return;
+  }
+  if (data?.detail) {
+    renderError({
+      message: "Validation error.",
+      hint: "Check inputs and retry.",
+      details: JSON.stringify(data.detail, null, 2),
+    });
+    return;
+  }
+  renderError({ message: "Something went wrong.", hint: "Check inputs and retry.", details: "No additional details." });
+}
+
 function renderEmpty(message, hint) {
   viewContent.innerHTML = `
-    <div class="rounded-xl border border-amber-400/30 bg-amber-400/10 p-6">
-      <div class="text-sm uppercase tracking-wide text-amber-200">Empty</div>
+    <div class="rounded-xl border border-orange-400/30 bg-orange-400/10 p-6">
+      <div class="text-sm uppercase tracking-wide text-orange-200">Empty</div>
       <div class="mt-2 text-lg font-semibold">${message}</div>
-      <div class="mt-1 text-sm text-amber-100/70">${hint || "Try another filter or ingest more data."}</div>
+      <div class="mt-1 text-sm text-orange-100/70">${hint || "Try another filter or ingest more data."}</div>
     </div>
   `;
 }
@@ -77,8 +94,8 @@ function renderEmpty(message, hint) {
 function renderWarnings(warnings = []) {
   if (!warnings.length) return "";
   return `
-    <div class="mb-4 rounded-xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-100">
-      <div class="font-semibold text-amber-200">Warnings</div>
+    <div class="mb-4 rounded-xl border border-orange-400/40 bg-orange-400/10 p-4 text-sm text-orange-100">
+      <div class="font-semibold text-orange-200">Warnings</div>
       <ul class="mt-2 list-disc space-y-1 pl-5">
         ${warnings.map((w) => `<li>${w.message}</li>`).join("")}
       </ul>
@@ -88,12 +105,12 @@ function renderWarnings(warnings = []) {
 
 function renderRawToggle(payload) {
   return `
-    <div class="mt-6 rounded-xl border border-slate-700 bg-slate-800/70 p-4">
+    <div class="mt-6 rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
       <label class="flex items-center gap-2 text-sm text-slate-300">
-        <input type="checkbox" class="raw-toggle h-4 w-4 rounded border-slate-600 bg-slate-900" />
+        <input type="checkbox" class="raw-toggle h-4 w-4 rounded border-orange-900/50 bg-[#1a0b0b]" />
         View raw JSON
       </label>
-      <pre class="raw-json mt-3 hidden max-h-64 overflow-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-200">${JSON.stringify(
+      <pre class="raw-json mt-3 hidden max-h-64 overflow-auto rounded-lg bg-[#1a0b0b] p-3 text-xs text-slate-200">${JSON.stringify(
         payload,
         null,
         2,
@@ -127,7 +144,7 @@ function renderHome() {
       ]
         .map(
           ([title, desc, view]) => `
-          <button data-view="${view}" class="tile-card group rounded-2xl border border-slate-700/70 bg-slate-800/70 p-6 text-left transition duration-150 hover:scale-[1.02] hover:border-amber-300/70 hover:shadow-glow">
+          <button data-view="${view}" class="tile-card group rounded-2xl border border-orange-700/50 bg-[#2b1111]/70 p-6 text-left transition duration-150 hover:scale-[1.02] hover:border-orange-300/70 hover:shadow-glow">
             <div class="text-xs uppercase tracking-wide text-slate-400">${view}</div>
             <div class="mt-3 text-lg font-semibold text-slate-100">${title}</div>
             <div class="mt-2 text-sm text-slate-300">${desc}</div>
@@ -144,10 +161,10 @@ function renderHome() {
 
 function renderFormCard(title, bodyHtml, actionLabel = "Run") {
   return `
-    <div class="rounded-2xl border border-slate-800 bg-slate-800/70 p-6">
+    <div class="rounded-2xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
       <div class="text-sm uppercase tracking-wide text-slate-400">${title}</div>
       <div class="mt-4 space-y-4">${bodyHtml}</div>
-      <button class="action-btn mt-4 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-400">
+      <button class="action-btn mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-orange-400">
         ${actionLabel}
       </button>
     </div>
@@ -160,100 +177,150 @@ function applyFieldStyles() {
       "w-full",
       "rounded-lg",
       "border",
-      "border-slate-700",
-      "bg-slate-900",
+      "border-orange-900/40",
+      "bg-[#1a0b0b]",
       "px-3",
       "py-2",
       "text-sm",
       "text-slate-200",
       "placeholder:text-slate-500",
-      "focus:border-amber-400",
+      "focus:border-orange-400",
       "focus:outline-none",
     );
   });
 }
 
+function renderEntityRequiredEmpty() {
+  renderEmpty("No entity selected.", "Pick a recent entity, or use Search to select one.");
+}
+
 function renderSearchView() {
   viewTitle.textContent = "Search";
   const entityValue = state.currentEntity || "";
+  const defaults = {
+    entity: state.searchParams.entity || entityValue,
+    name: state.searchParams.name || "",
+    item: state.searchParams.item || "",
+    type: state.searchParams.type || "",
+    from: state.searchParams.from || "",
+    to: state.searchParams.to || "",
+    limit: state.searchParams.limit || "200",
+  };
   viewContent.innerHTML = renderFormCard(
     "Search filters",
     `
     <div class="grid gap-4 md:grid-cols-2">
-      <input class="field" placeholder="Entity ID" value="${entityValue}" data-field="entity" />
-      <input class="field" placeholder="Name" data-field="name" />
-      <input class="field" placeholder="Item" data-field="item" />
-      <input class="field" placeholder="Type (bank_transfer, oferă, etc.)" data-field="type" />
-      <input class="field" placeholder="From (ISO)" data-field="from" />
-      <input class="field" placeholder="To (ISO)" data-field="to" />
-      <input class="field" placeholder="Limit (default 200)" data-field="limit" />
+      <input class="field" placeholder="Entity ID" value="${defaults.entity}" data-field="entity" />
+      <input class="field" placeholder="Name" value="${defaults.name}" data-field="name" />
+      <input class="field" placeholder="Item" value="${defaults.item}" data-field="item" />
+      <input class="field" placeholder="Type (bank_transfer, oferă, etc.)" value="${defaults.type}" data-field="type" />
+      <input class="field" placeholder="From (ISO)" value="${defaults.from}" data-field="from" />
+      <input class="field" placeholder="To (ISO)" value="${defaults.to}" data-field="to" />
+      <input class="field" placeholder="Limit (default 200)" value="${defaults.limit}" data-field="limit" />
     </div>
   `,
   );
   applyFieldStyles();
   const actionBtn = viewContent.querySelector(".action-btn");
   actionBtn.addEventListener("click", async () => {
-    renderLoading("Running search…");
-    const params = collectFields();
-    const query = new URLSearchParams(params).toString();
-    const data = await fetchJson(`/search?${query}`);
-    state.lastResponse = data;
-    if (!data.ok) {
-      renderError(data.error || {});
-      attachRawToggle();
-      return;
-    }
-    if (!data.data?.events?.length) {
-      renderEmpty("No events returned.", "Adjust filters or pick another entity.");
-      viewContent.innerHTML += renderRawToggle(data);
-      attachRawToggle();
-      return;
-    }
-    const rows = data.data.events;
-    viewContent.innerHTML = `
-      ${renderWarnings(data.warnings)}
-      <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
-        <div class="mb-3 text-sm text-slate-300">Matched: ${data.data.matched}</div>
-        <div class="overflow-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="text-xs uppercase text-slate-400">
-              <tr>
-                <th class="py-2">Timestamp</th>
-                <th>Type</th>
-                <th>Source</th>
-                <th>Target</th>
-                <th>Item</th>
-                <th>Money</th>
-              </tr>
-            </thead>
-            <tbody class="text-slate-200">
-              ${rows
-                .map(
-                  (row) => `
-                <tr class="border-t border-slate-700/60">
-                  <td class="py-2">${row.ts || "—"}</td>
-                  <td>${row.event_type || "—"}</td>
-                  <td>${row.src_id || row.src_name || "—"}</td>
-                  <td>${row.dst_id || row.dst_name || "—"}</td>
-                  <td>${row.item || "—"}</td>
-                  <td>${row.money ?? "—"}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      ${renderRawToggle(data)}
-    `;
-    attachRawToggle();
+    await runSearch(0);
   });
+}
+
+async function runSearch(offset) {
+  renderLoading("Running search…");
+  const params = Object.keys(state.searchParams).length ? { ...state.searchParams } : {};
+  const freshParams = collectFields();
+  if (Object.keys(freshParams).length) {
+    Object.assign(params, freshParams);
+  }
+  const limit = Number(params.limit || 200);
+  state.searchParams = { ...params, limit: String(limit), offset: String(offset) };
+  const query = new URLSearchParams({ ...params, limit, offset }).toString();
+  const data = await fetchJson(`/search?${query}`);
+  state.lastResponse = data;
+  if (!data.ok) {
+    renderErrorFromResponse(data);
+    attachRawToggle();
+    return;
+  }
+  const rows = data.data?.events || [];
+  if (!rows.length) {
+    renderEmpty("No events returned.", "Adjust filters or pick another entity.");
+    viewContent.innerHTML += renderRawToggle(data);
+    attachRawToggle();
+    return;
+  }
+  const matched = data.data.matched_total ?? 0;
+  const returned = data.data.returned_count ?? rows.length;
+  const currentOffset = data.data.offset ?? offset;
+  const hasNext = returned >= limit;
+  viewContent.innerHTML = `
+    ${renderWarnings(data.warnings)}
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
+        <div>Matched: ${matched}</div>
+        <div>Showing ${currentOffset + 1}–${currentOffset + returned}</div>
+      </div>
+      <div class="overflow-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs uppercase text-slate-400">
+            <tr>
+              <th class="py-2">Timestamp</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Target</th>
+              <th>Item</th>
+              <th>Money</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-200">
+            ${rows
+              .map(
+                (row) => `
+              <tr class="border-t border-orange-900/30">
+                <td class="py-2">${row.ts || "—"}</td>
+                <td>${row.event_type || "—"}</td>
+                <td>${row.src_id || row.src_name || "—"}</td>
+                <td>${row.dst_id || row.dst_name || "—"}</td>
+                <td>${row.item || "—"}</td>
+                <td>${row.money ?? "—"}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 flex items-center gap-3">
+        <button class="page-btn prev-btn" ${currentOffset <= 0 ? "disabled" : ""}>Previous</button>
+        <button class="page-btn next-btn" ${hasNext ? "" : "disabled"}>Next</button>
+      </div>
+    </div>
+    ${renderRawToggle(data)}
+  `;
+  attachRawToggle();
+  viewContent.querySelectorAll(".page-btn").forEach((btn) => {
+    btn.className =
+      "page-btn rounded-lg border border-orange-900/40 bg-[#1a0b0b] px-4 py-2 text-xs text-slate-200 hover:border-orange-400 disabled:cursor-not-allowed disabled:opacity-50";
+  });
+  const prevBtn = viewContent.querySelector(".prev-btn");
+  const nextBtn = viewContent.querySelector(".next-btn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => runSearch(Math.max(currentOffset - limit, 0)));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => runSearch(currentOffset + limit));
+  }
 }
 
 function renderSummaryView() {
   viewTitle.textContent = "Summary";
   const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   viewContent.innerHTML = renderFormCard(
     "Summary",
     `
@@ -267,7 +334,7 @@ function renderSummaryView() {
     const data = await fetchJson(`/summary?entity=${encodeURIComponent(params.entity || "")}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
@@ -281,21 +348,21 @@ function renderSummaryView() {
     viewContent.innerHTML = `
       ${renderWarnings(data.warnings)}
       <div class="grid gap-4 md:grid-cols-3">
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-xs uppercase text-slate-400">Money In</div>
           <div class="mt-2 text-xl font-semibold">${summary.money_in_formatted || summary.money_in || "—"}</div>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-xs uppercase text-slate-400">Money Out</div>
           <div class="mt-2 text-xl font-semibold">${summary.money_out_formatted || summary.money_out || "—"}</div>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-xs uppercase text-slate-400">Events</div>
           <div class="mt-2 text-xl font-semibold">${summary.events.length}</div>
         </div>
       </div>
       <div class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-sm text-slate-300">Top Partners</div>
           <ul class="mt-3 space-y-2 text-sm text-slate-200">
             ${(summary.top_partners || [])
@@ -306,7 +373,7 @@ function renderSummaryView() {
               .join("")}
           </ul>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-sm text-slate-300">Event Counts</div>
           <ul class="mt-3 space-y-2 text-sm text-slate-200">
             ${(summary.event_counts || [])
@@ -324,6 +391,10 @@ function renderSummaryView() {
 function renderStoragesView() {
   viewTitle.textContent = "Storages";
   const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   viewContent.innerHTML = renderFormCard(
     "Storage filters",
     `
@@ -343,7 +414,7 @@ function renderStoragesView() {
     const data = await fetchJson(`/storages?${query}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
@@ -360,7 +431,7 @@ function renderStoragesView() {
         ${containers
           .map(
             (c) => `
-            <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+            <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
               <div class="flex items-center justify-between">
                 <div class="text-lg font-semibold">${c.container}</div>
                 <div class="text-xs text-slate-400">puts ${c.puts} · removes ${c.removes}</div>
@@ -379,7 +450,7 @@ function renderStoragesView() {
                     ${c.items
                       .map(
                         (item) => `
-                      <tr class="border-t border-slate-700/60">
+                      <tr class="border-t border-orange-900/30">
                         <td class="py-2">${item.item}</td>
                         <td class="${item.current < 0 ? "text-red-300" : "text-slate-200"}">${item.current}</td>
                         <td class="text-slate-300">${item.total_in}</td>
@@ -405,6 +476,10 @@ function renderStoragesView() {
 function renderFlowView() {
   viewTitle.textContent = "Flow";
   const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   viewContent.innerHTML = renderFormCard(
     "Flow settings",
     `
@@ -429,7 +504,7 @@ function renderFlowView() {
     const data = await fetchJson(`/flow?${query}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
@@ -449,7 +524,7 @@ function renderFlowView() {
         ${chains
           .map(
             (chain) => `
-            <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+            <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
               <div class="text-xs uppercase text-slate-400">${chain.direction}</div>
               <div class="mt-2 text-sm text-slate-200">Steps: ${chain.chain.length}</div>
             </div>
@@ -467,6 +542,10 @@ function renderFlowView() {
 function renderTraceView() {
   viewTitle.textContent = "Trace";
   const entityValue = state.currentEntity || "";
+  if (!entityValue) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   viewContent.innerHTML = renderFormCard(
     "Trace settings",
     `
@@ -485,7 +564,7 @@ function renderTraceView() {
     const data = await fetchJson(`/trace?${query}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
@@ -501,7 +580,7 @@ function renderTraceView() {
         <button class="export-btn" data-format="json">Export JSON</button>
         <button class="export-btn" data-format="txt">Export TXT</button>
       </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
         <div class="text-sm text-slate-300">Nodes: ${(data.data.nodes || []).length}</div>
         <ul class="mt-3 space-y-2 text-sm text-slate-200">
           ${events
@@ -524,6 +603,10 @@ function renderTraceView() {
 
 function renderBetweenView() {
   viewTitle.textContent = "Between";
+  if (!state.currentEntity) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   viewContent.innerHTML = renderFormCard(
     "Between entities",
     `
@@ -543,7 +626,7 @@ function renderBetweenView() {
     const data = await fetchJson(`/between?${query}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
@@ -555,8 +638,8 @@ function renderBetweenView() {
       return;
     }
     viewContent.innerHTML = `
-      <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
-        <div class="text-sm text-slate-300">Connections: ${data.data.matched}</div>
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
+        <div class="text-sm text-slate-300">Connections: ${data.data.matched_total}</div>
         <ul class="mt-3 space-y-2 text-sm text-slate-200">
           ${events
             .slice(0, 20)
@@ -572,33 +655,49 @@ function renderBetweenView() {
 
 function renderAskView(question = "") {
   viewTitle.textContent = "Ask Phoenix";
-  viewContent.innerHTML = renderFormCard(
-    "Ask Phoenix",
+  const emptyNotice = !question
+    ? `
+      <div class="mb-4 rounded-xl border border-orange-400/30 bg-orange-400/10 p-4">
+        <div class="text-sm uppercase tracking-wide text-orange-200">Empty</div>
+        <div class="mt-2 text-lg font-semibold">No question submitted.</div>
+        <div class="mt-1 text-sm text-orange-100/70">Ask Phoenix using the global bar or type a question below.</div>
+      </div>
     `
-      <input class="field" placeholder="Your question" value="${question}" data-field="question" />
-  `,
-  "Ask",
-  );
+    : "";
+  viewContent.innerHTML = `
+    ${emptyNotice}
+    ${renderFormCard(
+      "Ask Phoenix",
+      `
+        <input class="field" placeholder="Your question" value="${question}" data-field="question" />
+    `,
+      "Ask",
+    )}
+  `;
   applyFieldStyles();
   viewContent.querySelector(".action-btn").addEventListener("click", async () => {
     renderLoading("Analyzing…");
     const params = collectFields();
+    if (!params.question) {
+      renderEmpty("No question submitted.", "Ask Phoenix using the global bar or type a question below.");
+      return;
+    }
     const data = await fetchJson(`/ask?q=${encodeURIComponent(params.question || "")}`);
     state.lastResponse = data;
     if (!data.ok) {
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
       return;
     }
     const payload = data.data || {};
     viewContent.innerHTML = `
-      <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-6">
+      <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
         <div class="text-sm uppercase tracking-wide text-slate-400">Answer</div>
         <div class="mt-3 text-lg font-semibold">Intent: ${payload.intent || "ask"}</div>
         <div class="mt-2 text-sm text-slate-300">Primary entity: ${payload.pid || "—"}</div>
       </div>
       <div class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-sm text-slate-300">Evidence</div>
           <ul class="mt-3 space-y-2 text-sm text-slate-200">
             ${(payload.data?.events || [])
@@ -607,7 +706,7 @@ function renderAskView(question = "") {
               .join("")}
           </ul>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-4">
+        <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-4">
           <div class="text-sm text-slate-300">Suggested next actions</div>
           <ul class="mt-3 space-y-2 text-sm text-slate-200">
             ${(payload.data?.nodes || [])
@@ -625,6 +724,10 @@ function renderAskView(question = "") {
 
 function renderReportsView() {
   viewTitle.textContent = "Reports";
+  if (!state.currentEntity) {
+    renderEntityRequiredEmpty();
+    return;
+  }
   const placeholder = {
     ok: true,
     data: {
@@ -632,11 +735,11 @@ function renderReportsView() {
     },
   };
   viewContent.innerHTML = `
-    <div class="rounded-xl border border-slate-800 bg-slate-800/70 p-6">
+    <div class="rounded-xl border border-orange-900/40 bg-[#2b1111]/70 p-6">
       <div class="text-sm uppercase tracking-wide text-slate-400">Reports</div>
       <div class="mt-3 text-lg font-semibold">Professional exports</div>
       <div class="mt-2 text-sm text-slate-300">
-        Generate case files via <span class="text-amber-300">report &lt;id&gt;</span> in the CLI. This UI will add
+        Generate case files via <span class="text-orange-300">report &lt;id&gt;</span> in the CLI. This UI will add
         download options in a future release.
       </div>
     </div>
@@ -662,7 +765,7 @@ function collectFields() {
 function attachExportButtons(data) {
   viewContent.querySelectorAll(".export-btn").forEach((btn) => {
     btn.className =
-      "export-btn rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 hover:border-amber-400";
+      "export-btn rounded-lg border border-orange-900/40 bg-[#1a0b0b] px-3 py-2 text-xs text-slate-200 hover:border-orange-400";
     btn.addEventListener("click", () => {
       const format = btn.dataset.format;
       const payload = format === "txt" ? JSON.stringify(data.data, null, 2) : JSON.stringify(data, null, 2);
@@ -720,7 +823,7 @@ function updateRecentEntities() {
   recentEntitiesEl.innerHTML = state.recentEntities
     .map(
       (e) => `
-      <button class="entity-btn w-full rounded-lg border border-slate-800 bg-slate-800/60 px-3 py-2 text-left text-xs text-slate-200 hover:border-amber-300" data-entity="${e.player_id}">
+      <button class="entity-btn w-full rounded-lg border border-orange-900/40 bg-[#2b1111]/60 px-3 py-2 text-left text-xs text-slate-200 hover:border-orange-300" data-entity="${e.player_id}">
         <div class="font-semibold">${e.player_id}</div>
         <div class="text-[11px] text-slate-400">${e.name || "Unknown"} · ${e.last_seen || "—"}</div>
       </button>
@@ -739,7 +842,7 @@ function updateRecentEntities() {
 async function boot() {
   document.querySelectorAll(".sidebar-btn").forEach((btn) => {
     btn.className =
-      "sidebar-btn w-full rounded-lg border border-transparent px-3 py-2 text-left text-sm text-slate-300 hover:border-slate-700 hover:bg-slate-800";
+      "sidebar-btn w-full rounded-lg border border-transparent px-3 py-2 text-left text-sm text-slate-300 hover:border-orange-900/40 hover:bg-[#2b1111]";
     btn.addEventListener("click", () => setView(btn.dataset.view));
   });
 
@@ -755,7 +858,7 @@ async function boot() {
     const data = await fetchJson("/build", { method: "POST" });
     if (!data.ok) {
       setStatus("Build failed", "error");
-      renderError(data.error || {});
+      renderErrorFromResponse(data);
       attachRawToggle();
     } else {
       setStatus("DB rebuilt", "ok");
