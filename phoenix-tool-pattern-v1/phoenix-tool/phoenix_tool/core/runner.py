@@ -61,7 +61,13 @@ def _normalize_optional_int(value: Any) -> int | None:
 
 
 def _normalize_search_params(params: dict[str, Any]) -> dict[str, Any]:
-    ids = _normalize_ids(params.get("ids") or params.get("id") or params.get("entity"))
+    ids: list[str] = []
+    for key in ("ids", "id", "entity", "src_id", "dst_id"):
+        value = params.get(key)
+        normalized = _normalize_ids(value)
+        if normalized:
+            ids.extend(normalized)
+    ids = list(dict.fromkeys(ids)) or None
     between_ids = params.get("between_ids") or params.get("between")
     if between_ids and isinstance(between_ids, str):
         between_ids = [p.strip() for p in between_ids.split(",") if p.strip()]
@@ -305,7 +311,11 @@ def run_command(command: str, params: dict[str, Any] | None = None) -> dict[str,
                 return empty
             data = core_commands.ask(str(question))
             if data.get("ok") is False:
-                return _error("ask", {"question": question}, "VALIDATION", data.get("message", "Ask failed."), "Include a valid entity id.")
+                examples = data.get("examples") or []
+                hint = "Include a valid entity id."
+                if examples:
+                    hint = "Try queries like: " + "; ".join(examples)
+                return _error("ask", {"question": question}, "VALIDATION", data.get("message", "Ask failed."), hint)
             return build_response("ask", {"question": str(question)}, data)
 
         if cmd == "save":
